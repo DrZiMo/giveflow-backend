@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ROLE {
+  USER
+  ADMIN
+}
+
+enum CAUSE_STATUS {
+  VERIFIED
+  PENDING
+  REJECTED
+}
+
+enum URGENCY_LEVEL {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+model user {
+  id           Int            @id @default(autoincrement())
+  first_name   String
+  last_name    String
+  email        String         @unique
+  password     String
+  role         ROLE
+  is_anonymous Boolean
+  is_verified  Boolean
+  is_deleted   Boolean
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+  cause        cause[]
+  donation     donation[]
+  following    follower[]     @relation("userFollower")
+  follower     follower[]     @relation("recipientFollower")
+  notification notification[]
+  like         like[]
+  saveForLater saveForLater[]
+  review       review[]
+  reply        reply[]
+}
+
+model cause {
+  id                String        @id @default(uuid())
+  recipient_id      Int
+  name              String
+  short_description String?
+  long_description  String?
+  amount_needed     Float
+  current_amount    Float
+  status            CAUSE_STATUS
+  is_deleted        Boolean
+  category_id       String
+  urgency_level     URGENCY_LEVEL
+  is_expired        Boolean
+  expiration_date   DateTime
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+
+  recipient    user           @relation(fields: [recipient_id], references: [id], onDelete: Cascade)
+  category     category       @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  donation     donation[]
+  like         like[]
+  saveForLater saveForLater[]
+  review       review[]
+}
+
+model category {
+  id         String   @id @default(uuid())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  cause      cause[]
+}
+
+model donation {
+  id         String   @id @default(uuid())
+  user_id    Int
+  cause_id   String
+  donated_at DateTime @default(now())
+
+  user  user  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  cause cause @relation(fields: [cause_id], references: [id], onDelete: Cascade)
+}
+
+model follower {
+  id           String   @id @default(uuid())
+  user_id      Int
+  recipient_id Int
+  followed_at  DateTime @default(now())
+
+  user      user @relation(fields: [user_id], references: [id], onDelete: Cascade, name: "userFollower")
+  recipient user @relation(fields: [recipient_id], references: [id], onDelete: Cascade, name: "recipientFollower")
+}
+
+model notification {
+  id         String   @id @default(uuid())
+  user_id    Int
+  name       String
+  message    String
+  is_read    Boolean
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model like {
+  id         String   @id @default(uuid())
+  user_id    Int
+  cause_id   String
+  liked_at   DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user  user  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  cause cause @relation(fields: [cause_id], references: [id], onDelete: Cascade)
+}
+
+model saveForLater {
+  id         String   @id @default(uuid())
+  user_id    Int
+  cause_id   String
+  saved_at   DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user  user  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  cause cause @relation(fields: [cause_id], references: [id], onDelete: Cascade)
+}
+
+model review {
+  id         String   @id @default(uuid())
+  user_id    Int
+  cause_id   String
+  message    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user    user    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  cause   cause   @relation(fields: [cause_id], references: [id], onDelete: Cascade)
+  replies reply[]
+}
+
+model reply {
+  id         String   @id @default(uuid())
+  user_id    Int
+  review_id  String
+  message    String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user   user   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  review review @relation(fields: [review_id], references: [id], onDelete: Cascade)
+}
