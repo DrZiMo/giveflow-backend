@@ -25,26 +25,28 @@ enum URGENCY_LEVEL {
 }
 
 model user {
-  id           Int            @id @default(autoincrement())
-  first_name   String
-  last_name    String
-  email        String         @unique
-  phone_number String         @unique
-  password     String
-  role         ROLE
-  is_anonymous Boolean        @default(false)
-  is_verified  Boolean        @default(false)
-  is_deleted   Boolean        @default(false)
-  created_at   DateTime       @default(now())
-  updated_at   DateTime       @updatedAt
-  cause        cause[]
-  donation     donation[]
-  following    follower[]
-  notification notification[]
-  like         like[]
-  saveForLater saveForLater[]
-  review       review[]
-  reply        reply[]
+  id             Int              @id @default(autoincrement())
+  first_name     String
+  last_name      String
+  email          String           @unique
+  phone_number   String           @unique
+  password       String
+  profile_pic    String           @default("")
+  role           ROLE
+  is_anonymous   Boolean          @default(false)
+  is_verified    Boolean          @default(false)
+  is_deleted     Boolean          @default(false)
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @updatedAt
+  cause          cause[]
+  donation       donation[]
+  following      follower[]
+  notification   notification[]
+  like           like[]
+  saveForLater   saveForLater[]
+  review         review[]
+  reply          reply[]
+  search_history search_history[]
 }
 
 model giving_page {
@@ -146,6 +148,16 @@ model saveForLater {
 
   user  user  @relation(fields: [user_id], references: [id], onDelete: Cascade)
   cause cause @relation(fields: [cause_id], references: [id], onDelete: Cascade)
+}
+
+model search_history {
+  id         String   @id @default(uuid())
+  user_id    Int
+  search     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model review {

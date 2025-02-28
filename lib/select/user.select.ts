@@ -4,6 +4,7 @@ export const userSelect = {
     last_name: true,
     email: true,
     phone_number: true,
+    profile_pic: true,
     role: true,
     is_anonymous: true,
     is_verified: true,

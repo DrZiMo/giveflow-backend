@@ -198,6 +198,74 @@ export const addPhoneNumber = async (req: AuthRequest, res: Response) => {
     }
 }
 
+// change profile pic
+export const changeProfilePic = async (req: AuthRequest, res: Response) => {
+    try {
+        // TODO: Add the cloudinary logic
+        if (!req.userId) {
+            resShort(res, 400, false, 'No user ID provided')
+            return
+        }
+
+        const { profile_pic } = req.body
+
+        if (!profile_pic) {
+            resShort(res, 400, false, 'No Image provided')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: {
+                id: req.userId,
+            },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        await prisma.user.update({
+            where: { id: req.userId },
+            data: { profile_pic },
+        })
+
+        resShort(res, 200, true, 'Profile picture changed successfullly')
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// remove the profile pic
+export const removeProfilePic = async (req: AuthRequest, res: Response) => {
+    try {
+        // TODO: Add the cloudinary logic
+        if (!req.userId) {
+            resShort(res, 400, false, 'No user ID provided')
+            return
+        }
+        const user = await prisma.user.findFirst({
+            where: {
+                id: req.userId,
+            },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        await prisma.user.update({
+            where: { id: req.userId },
+            data: { profile_pic: '' },
+        })
+
+        resShort(res, 200, true, 'Profile picture removed successfullly')
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
 // logout
 export const logout = async (req: AuthRequest, res: Response) => {
     try {
@@ -230,6 +298,227 @@ export const whoami = async (req: AuthRequest, res: Response) => {
             ok: true,
             user,
         })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// delete user temperorly
+export const deleteUserTemp = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.body
+
+        if (!id) {
+            resShort(res, 400, false, 'You must provide ID')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: {
+                id,
+            },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        if (user.is_deleted) {
+            resShort(res, 400, false, 'User is already deleted')
+            return
+        }
+
+        await prisma.user.update({
+            where: {
+                id,
+            },
+            data: {
+                is_deleted: true,
+            },
+        })
+
+        resShort(res, 200, true, `User deleted successfully`)
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// restore user
+export const restoreDeletedUser = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.body
+
+        if (!id) {
+            resShort(res, 400, false, 'You must provide ID')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: {
+                id,
+            },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        if (!user.is_deleted) {
+            resShort(res, 400, false, 'User is already not deleted')
+            return
+        }
+
+        await prisma.user.update({
+            where: {
+                id,
+            },
+            data: {
+                is_deleted: false,
+            },
+        })
+
+        resShort(res, 200, true, `User restored successfully`)
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// delete user permenantly by admin
+export const deleteUserPerByAdmin = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params
+
+        if (!id) {
+            resShort(res, 400, false, 'You must provide ID')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: {
+                id: +id,
+            },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        await prisma.user.delete({
+            where: {
+                id: +id,
+            },
+        })
+
+        resShort(res, 200, true, `User ${user.id} deleted permenantly`)
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// delete user permenantly by the user him self
+export const deleteUserPerByUser = async (req: AuthRequest, res: Response) => {
+    try {
+        const id = req.userId
+
+        if (!id) {
+            resShort(res, 400, false, 'User ID is not provided')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: {
+                id,
+            },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        await prisma.user.delete({
+            where: {
+                id,
+            },
+        })
+
+        resShort(res, 200, true, `User ${user.id} deleted permenantly`)
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// verify user by the admin
+export const toggleVerification = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.body
+
+        if (!id) {
+            resShort(res, 400, false, 'You must provide ID')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: {
+                id,
+            },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        await prisma.user.update({
+            where: {
+                id,
+            },
+            data: {
+                is_verified: !user.is_verified,
+            },
+        })
+
+        resShort(
+            res,
+            200,
+            true,
+            `User verification changed to: ${!user.is_verified}`
+        )
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// make the user anonymous
+export const toggleAnonymousUser = async (req: AuthRequest, res: Response) => {
+    try {
+        if (!req.userId) {
+            resShort(res, 400, false, 'User ID is not provided')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: { id: req.userId },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        await prisma.user.update({
+            where: {
+                id: req.body,
+            },
+            data: {
+                is_anonymous: !user.is_anonymous,
+            },
+        })
+
+        resShort(res, 200, true, 'User anonymouns changed successfully')
     } catch (error) {
         catchError(error, res)
     }
