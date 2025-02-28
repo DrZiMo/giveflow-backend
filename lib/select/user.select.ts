@@ -3,6 +3,7 @@ export const userSelect = {
     first_name: true,
     last_name: true,
     email: true,
+    phone_number: true,
     role: true,
     is_anonymous: true,
     is_verified: true,
