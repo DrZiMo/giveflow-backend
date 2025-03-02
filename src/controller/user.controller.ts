@@ -7,6 +7,9 @@ import argon2 from 'argon2'
 import { generateToken } from '../../lib/jwt'
 import { AuthRequest } from '../../types/request.types'
 import { resShort } from '../../lib/response'
+import jwt from 'jsonwebtoken'
+import { generateCode } from '../../lib/generate.code'
+import { sendEmail } from '../../lib/send.email'
 
 const prisma = new PrismaClient()
 
@@ -97,6 +100,16 @@ export const signUp = async (req: Request, res: Response) => {
         if (isEmail) {
             resShort(res, 400, false, 'Email already exist')
             return
+        }
+
+        if (phone_number) {
+            const isPhoneNumber = await prisma.user.findFirst({
+                where: { phone_number },
+            })
+            if (isPhoneNumber) {
+                resShort(res, 400, false, 'Phone number already exists')
+                return
+            }
         }
 
         if (password !== confirm_password) {
@@ -451,6 +464,41 @@ export const deleteUserPerByUser = async (req: AuthRequest, res: Response) => {
     }
 }
 
+// change role - only by the admin
+export const changeRole = async (req: Request, res: Response) => {
+    try {
+        const { id, role }: { id: number; role: ROLE } = req.body
+
+        if (!id || !role) {
+            resShort(res, 400, false, 'Fill the inputs')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: { id },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        if (user.role == role) {
+            resShort(res, 400, false, `User role is already ${role}`)
+            return
+        }
+
+        await prisma.user.update({
+            where: { id },
+            data: { role },
+        })
+
+        resShort(res, 200, true, `User role changed successfully to: ${role}`)
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
 // verify user by the admin
 export const toggleVerification = async (req: Request, res: Response) => {
     try {
@@ -519,6 +567,352 @@ export const toggleAnonymousUser = async (req: AuthRequest, res: Response) => {
         })
 
         resShort(res, 200, true, 'User anonymouns changed successfully')
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// send code to email
+export const sendCodeEmail = async (req: Request, res: Response) => {
+    try {
+        const { email }: { email: string } = req.body
+        const code = generateCode()
+        const expiry = new Date(Date.now() + 2 * 60 * 1000)
+
+        if (!email) {
+            resShort(res, 400, false, 'Enter the email')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: { email },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User is not found')
+            return
+        }
+
+        await prisma.verification_code.create({
+            data: {
+                user_id: user.id,
+                code,
+                expiry,
+            },
+        })
+
+        sendEmail(email, 'GiveFlow verification code', code)
+
+        resShort(res, 200, true, 'The verification code is sent successfully')
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// send code to phone number
+export const sendCodePhoneNumber = async (req: Request, res: Response) => {
+    try {
+        const { phone_number } = req.body
+        const code = generateCode()
+        const expiry = new Date(Date.now() + 2 * 60 * 1000)
+
+        if (!phone_number) {
+            resShort(res, 400, false, 'Enter the phone number')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: { phone_number },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User is not found')
+            return
+        }
+
+        const verificationCode = await prisma.verification_code.create({
+            data: {
+                user_id: user.id,
+                code,
+                expiry,
+            },
+        })
+
+        // TODO: phone number sending logic
+
+        resShort(res, 200, true, 'The verification code is sent successfully')
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// email verification
+export const verifyEmail = async (req: Request, res: Response) => {
+    try {
+        const { email, code } = req.body
+
+        if (!email || !code) {
+            resShort(res, 400, false, 'Fill the inputs')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: { email },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        if (user.is_email_verified) {
+            resShort(res, 400, false, 'User email is already verified')
+            return
+        }
+
+        const confirmCode = await prisma.verification_code.findFirst({
+            where: { user_id: user.id },
+            orderBy: { created_at: 'desc' },
+        })
+
+        if (!confirmCode) {
+            resShort(res, 404, false, 'No verification code registered')
+            return
+        }
+
+        if (confirmCode.expiry.getTime() < Date.now()) {
+            await prisma.verification_code.delete({
+                where: { id: confirmCode.id },
+            })
+            resShort(res, 400, false, 'Verification code expired')
+            return
+        }
+
+        if (confirmCode.code !== code) {
+            resShort(res, 400, false, 'Incorrect verification code')
+            return
+        }
+
+        await prisma.verification_code.update({
+            where: { id: confirmCode.id },
+            data: { verified: true },
+        })
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { is_email_verified: true },
+        })
+
+        resShort(res, 200, true, 'Email is verified')
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// phone number verification
+export const verifyPhoneNumber = async (req: Request, res: Response) => {
+    try {
+        const { phone_number, code } = req.body
+
+        if (!phone_number || !code) {
+            resShort(res, 400, false, 'Fill the inputs')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: { phone_number },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        if (user.is_phone_number_verified) {
+            resShort(res, 400, false, 'User phone number is already verified')
+            return
+        }
+
+        const confirmCode = await prisma.verification_code.findFirst({
+            where: { user_id: user.id },
+            orderBy: { created_at: 'desc' },
+        })
+
+        if (!confirmCode) {
+            resShort(res, 404, false, 'No verification code registered')
+            return
+        }
+
+        if (confirmCode.expiry.getTime() < Date.now()) {
+            await prisma.verification_code.delete({
+                where: { id: confirmCode.id },
+            })
+            resShort(res, 400, false, 'Verification code expired')
+            return
+        }
+
+        if (confirmCode.code !== code) {
+            resShort(res, 400, false, 'Incorrect verification code')
+            return
+        }
+
+        await prisma.verification_code.update({
+            where: { id: confirmCode.id },
+            data: { verified: true },
+        })
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { is_phone_number_verified: true },
+        })
+
+        resShort(res, 200, true, 'Phone number is verified')
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// verify reset code
+export const verifyResetCode = async (req: Request, res: Response) => {
+    try {
+        const { email, phone_number, code } = req.body
+
+        if ((!email && !phone_number) || !code) {
+            resShort(res, 400, false, 'Fill all inputs')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: email ? { email } : { phone_number },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        const confirmCode = await prisma.verification_code.findFirst({
+            where: { user_id: user.id },
+            orderBy: { created_at: 'desc' },
+        })
+
+        if (!confirmCode) {
+            resShort(res, 404, false, 'No verification code found')
+            return
+        }
+
+        if (confirmCode.expiry.getTime() < Date.now()) {
+            await prisma.verification_code.delete({
+                where: { id: confirmCode.id },
+            })
+            resShort(res, 400, false, 'Verification code expired')
+            return
+        }
+
+        if (confirmCode.code !== code) {
+            resShort(res, 400, false, 'Incorrect verification code')
+            return
+        }
+        await prisma.verification_code.update({
+            where: { id: confirmCode.id },
+            data: { verified: true },
+        })
+
+        resShort(
+            res,
+            200,
+            true,
+            'Verification code is correct, proceed to reset password'
+        )
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// reset password
+export const resetPassword = async (req: Request, res: Response) => {
+    try {
+        const { email, phone_number, newPassword } = req.body
+
+        if ((!email && !phone_number) || newPassword) {
+            resShort(res, 400, false, 'Fill all the inputs')
+            return
+        }
+
+        const user = await prisma.user.findFirst({
+            where: email ? { email } : { phone_number },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        const verificationCode = await prisma.verification_code.findFirst({
+            where: { user_id: user.id },
+            orderBy: { created_at: 'desc' },
+        })
+
+        if (!verificationCode) {
+            resShort(res, 400, false, 'No verification code registered')
+            return
+        }
+
+        if (!verificationCode.verified) {
+            resShort(res, 400, false, 'Not verified')
+            return
+        }
+
+        const newPasswordHasshed = await argon2.hash(newPassword)
+
+        await prisma.user.update({
+            where: { id: user.id },
+            data: { password: newPasswordHasshed },
+        })
+
+        resShort(res, 200, true, 'Password successfully resetted')
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// refresh token logic
+export const refreshToken = async (req: Request, res: Response) => {
+    try {
+        const refresh_token = req.cookies.refresh_token
+
+        if (!refresh_token) {
+            resShort(
+                res,
+                401,
+                false,
+                'Unauthorized - No refresh token provided'
+            )
+            return
+        }
+
+        const decode = jwt.verify(
+            refresh_token,
+            process.env.JWT_REFRESH_SECRET as string
+        ) as { userId: number }
+
+        if (!decode) {
+            resShort(res, 401, false, 'Unauthorized - Invalid refresh token')
+            return
+        }
+
+        const accessToken = jwt.sign(
+            { userId: decode.userId },
+            process.env.JWT_ACCESS_SECRET as string
+        )
+
+        res.cookie('token', accessToken, {
+            maxAge: 15 * 60 * 1000,
+            sameSite: 'strict',
+            httpOnly: true,
+        })
+
+        resShort(res, 201, true, 'Access token created successfully')
     } catch (error) {
         catchError(error, res)
     }

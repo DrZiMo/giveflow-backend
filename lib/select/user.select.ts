@@ -9,6 +9,8 @@ export const userSelect = {
     is_anonymous: true,
     is_verified: true,
     is_deleted: true,
+    is_email_verified: true,
+    is_phone_number_verified: true,
     created_at: true,
     updated_at: true,
 }
