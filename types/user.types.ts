@@ -19,3 +19,9 @@ export interface ILoginUser {
     email: string
     password: string
 }
+
+export interface IUpdateUser {
+    id: number
+    first_name: string
+    last_name: string
+}

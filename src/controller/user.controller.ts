@@ -2,7 +2,12 @@ import { Request, Response } from 'express'
 import { PrismaClient, ROLE } from '@prisma/client'
 import { catchError } from '../../lib/catch.error'
 import { userSelect } from '../../lib/select/user.select'
-import { ILoginUser, ISearchUser, ISingUpUser } from '../../types/user.types'
+import {
+    ILoginUser,
+    ISearchUser,
+    ISingUpUser,
+    IUpdateUser,
+} from '../../types/user.types'
 import argon2 from 'argon2'
 import { generateToken } from '../../lib/jwt'
 import { AuthRequest } from '../../types/request.types'
@@ -398,6 +403,57 @@ export const restoreDeletedUser = async (req: Request, res: Response) => {
     }
 }
 
+// update the user by the admin
+export const updateUserAdmin = async (req: Request, res: Response) => {
+    try {
+        const { id, first_name, last_name }: IUpdateUser = req.body
+
+        if (!id) {
+            resShort(res, 400, false, 'Enter the user ID')
+            return
+        }
+
+        await prisma.user.update({
+            where: { id },
+            data: {
+                first_name,
+                last_name,
+            },
+        })
+
+        resShort(res, 200, true, 'User updated successfully')
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// update the user by the admin
+export const updateUser = async (req: AuthRequest, res: Response) => {
+    try {
+        const {
+            first_name,
+            last_name,
+        }: { first_name: string; last_name: string } = req.body
+
+        if (!req.userId) {
+            resShort(res, 400, false, 'Enter the user ID')
+            return
+        }
+
+        await prisma.user.update({
+            where: { id: req.userId },
+            data: {
+                first_name,
+                last_name,
+            },
+        })
+
+        resShort(res, 200, true, 'User updated successfully')
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
 // delete user permenantly by admin
 export const deleteUserPerByAdmin = async (req: Request, res: Response) => {
     try {
@@ -573,23 +629,23 @@ export const toggleAnonymousUser = async (req: AuthRequest, res: Response) => {
 }
 
 // send code to email
-export const sendCodeEmail = async (req: Request, res: Response) => {
+export const sendCodeEmail = async (req: AuthRequest, res: Response) => {
     try {
-        const { email }: { email: string } = req.body
+        const user = await prisma.user.findFirst({
+            where: { id: req.userId },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User is not found')
+            return
+        }
+
+        const email = user.email
         const code = generateCode()
         const expiry = new Date(Date.now() + 2 * 60 * 1000)
 
         if (!email) {
             resShort(res, 400, false, 'Enter the email')
-            return
-        }
-
-        const user = await prisma.user.findFirst({
-            where: { email },
-        })
-
-        if (!user) {
-            resShort(res, 404, false, 'User is not found')
             return
         }
 
@@ -610,9 +666,18 @@ export const sendCodeEmail = async (req: Request, res: Response) => {
 }
 
 // send code to phone number
-export const sendCodePhoneNumber = async (req: Request, res: Response) => {
+export const sendCodePhoneNumber = async (req: AuthRequest, res: Response) => {
     try {
-        const { phone_number } = req.body
+        const user = await prisma.user.findFirst({
+            where: { id: req.userId },
+        })
+
+        if (!user) {
+            resShort(res, 404, false, 'User is not found')
+            return
+        }
+
+        const phone_number = user.phone_number
         const code = generateCode()
         const expiry = new Date(Date.now() + 2 * 60 * 1000)
 
@@ -621,16 +686,7 @@ export const sendCodePhoneNumber = async (req: Request, res: Response) => {
             return
         }
 
-        const user = await prisma.user.findFirst({
-            where: { phone_number },
-        })
-
-        if (!user) {
-            resShort(res, 404, false, 'User is not found')
-            return
-        }
-
-        const verificationCode = await prisma.verification_code.create({
+        await prisma.verification_code.create({
             data: {
                 user_id: user.id,
                 code,
@@ -647,21 +703,21 @@ export const sendCodePhoneNumber = async (req: Request, res: Response) => {
 }
 
 // email verification
-export const verifyEmail = async (req: Request, res: Response) => {
+export const verifyEmail = async (req: AuthRequest, res: Response) => {
     try {
-        const { email, code } = req.body
-
-        if (!email || !code) {
-            resShort(res, 400, false, 'Fill the inputs')
-            return
-        }
-
         const user = await prisma.user.findFirst({
-            where: { email },
+            where: { id: req.userId },
         })
 
         if (!user) {
             resShort(res, 404, false, 'User not found')
+            return
+        }
+
+        const { code } = req.body
+
+        if (!code) {
+            resShort(res, 400, false, 'Enter the code')
             return
         }
 
@@ -710,18 +766,23 @@ export const verifyEmail = async (req: Request, res: Response) => {
 }
 
 // phone number verification
-export const verifyPhoneNumber = async (req: Request, res: Response) => {
+export const verifyPhoneNumber = async (req: AuthRequest, res: Response) => {
     try {
-        const { phone_number, code } = req.body
+        const user = await prisma.user.findFirst({
+            where: { id: req.userId },
+        })
 
-        if (!phone_number || !code) {
-            resShort(res, 400, false, 'Fill the inputs')
+        if (!user) {
+            resShort(res, 404, false, 'User not found')
             return
         }
 
-        const user = await prisma.user.findFirst({
-            where: { phone_number },
-        })
+        const { code } = req.body
+
+        if (!code) {
+            resShort(res, 400, false, 'Enter the code')
+            return
+        }
 
         if (!user) {
             resShort(res, 404, false, 'User not found')

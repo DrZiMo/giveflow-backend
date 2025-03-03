@@ -19,6 +19,8 @@ import {
     signUp,
     toggleAnonymousUser,
     toggleVerification,
+    updateUser,
+    updateUserAdmin,
     verifyEmail,
     verifyPhoneNumber,
     verifyResetCode,
@@ -50,6 +52,12 @@ router.post(
     authorize([ROLE.ADMIN]),
     toggleVerification
 )
+router.put(
+    '/update-user-admin',
+    authenticate,
+    authorize([ROLE.ADMIN]),
+    updateUserAdmin
+)
 router.delete(
     '/delete/:id',
     authenticate,
@@ -63,14 +71,15 @@ router.get('/phone-number', authenticate, addPhoneNumber)
 router.get('/profile-picture', authenticate, changeProfilePic)
 router.get('/remove-profile-picture', authenticate, removeProfilePic)
 router.post('/anonymous', authenticate, toggleAnonymousUser)
-router.post('/send-code-email', sendCodeEmail)
-router.post('/send-code-phone-number', sendCodePhoneNumber)
-router.post('/verify-email', verifyEmail)
-router.post('/verify-phone-number', verifyPhoneNumber)
-router.post('/verify-reset-code', verifyResetCode)
+router.post('/send-code-email', authenticate, sendCodeEmail)
+router.post('/send-code-phone-number', authenticate, sendCodePhoneNumber)
+router.post('/verify-email', authenticate, verifyEmail)
+router.post('/verify-phone-number', authenticate, verifyPhoneNumber)
+router.post('/verify-reset-code', authenticate, verifyResetCode)
 router.post('/reset-password', authenticate, resetPassword)
 router.get('/whoami', authenticate, whoami)
 router.get('/logout', authenticate, logout)
+router.put('/update-user', authenticate, updateUser)
 router.delete('/delete-current/:id', authenticate, deleteUserPerByUser)
 router.get('/refresh-token', refreshToken)
 
