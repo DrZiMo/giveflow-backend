@@ -56,7 +56,10 @@ model giving_page {
   id            String     @id @default(uuid())
   name          String     @unique
   description   String
+  profile_pic   String
+  cover_pic     String
   created_by_id Int
+  is_verified   Boolean    @default(false)
   is_deleted    Boolean    @default(false)
   created_at    DateTime   @default(now())
   updated_at    DateTime   @updatedAt

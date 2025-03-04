@@ -7,6 +7,7 @@ import {
     deleteUserPerByUser,
     deleteUserTemp,
     getAllUsers,
+    getDeletedUsers,
     getSingleUser,
     login,
     logout,
@@ -35,10 +36,10 @@ const router = Router()
 router.get('/all', authenticate, authorize([ROLE.ADMIN]), getAllUsers)
 router.post('/search', authenticate, authorize([ROLE.ADMIN]), getSingleUser)
 router.get(
-    '/delete-temp',
+    '/recycle-pin',
     authenticate,
     authorize([ROLE.ADMIN]),
-    deleteUserTemp
+    getDeletedUsers
 )
 router.get(
     '/restore',
@@ -64,6 +65,7 @@ router.delete(
     authorize([ROLE.ADMIN]),
     deleteUserPerByAdmin
 )
+router.get('/delete-temp', authenticate, deleteUserTemp)
 router.post('/change-role', authenticate, authorize([ROLE.ADMIN]), changeRole)
 router.post('/signup', signUp)
 router.post('/login', login)

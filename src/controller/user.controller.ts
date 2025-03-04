@@ -362,6 +362,27 @@ export const deleteUserTemp = async (req: Request, res: Response) => {
     }
 }
 
+// get the user recycle pin
+export const getDeletedUsers = async (req: Request, res: Response) => {
+    try {
+        const deletedUsers = await prisma.user.findMany({
+            where: { is_deleted: true },
+        })
+
+        if (!deletedUsers) {
+            resShort(res, 404, false, 'No deleted users')
+            return
+        }
+
+        res.status(200).json({
+            ok: true,
+            users: deletedUsers,
+        })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
 // restore user
 export const restoreDeletedUser = async (req: Request, res: Response) => {
     try {
