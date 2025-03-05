@@ -14,6 +14,7 @@ import {
 } from '../../types/page.types'
 import { AuthRequest } from '../../types/request.types'
 import { pageInclude } from '../../lib/include/page.include'
+import cloudinary from '../../utils/cloudinary'
 
 const prisma = new PrismaClient()
 
@@ -205,10 +206,15 @@ export const updatePage = async (req: Request, res: Response) => {
 // change the profile picture
 export const changeProfilePic = async (req: Request, res: Response) => {
     try {
-        const { id, profile_pic }: IChangeProfilePic = req.body
+        const { id }: IChangeProfilePic = req.body
 
-        if (!id || !profile_pic) {
-            resShort(res, 404, false, 'Fill all the inputs')
+        if (!id) {
+            resShort(res, 404, false, 'Enter the ID')
+            return
+        }
+
+        if (!req.file || req.file.path) {
+            resShort(res, 404, false, 'No file request sent')
             return
         }
 
@@ -222,12 +228,28 @@ export const changeProfilePic = async (req: Request, res: Response) => {
         }
 
         // TODO: Cloudinary logic
+        const cloudinaryUpload = await cloudinary.uploader.upload(
+            req.file.path,
+            { folder: 'profile_pics' }
+        )
+        const result = {
+            path: cloudinaryUpload.secure_url,
+            public_id: cloudinaryUpload.public_id,
+        }
         await prisma.giving_page.update({
             where: { id },
-            data: { profile_pic },
+            data: {
+                profile_pic: result.path,
+                profile_pic_public_id: result.public_id,
+            },
         })
 
-        resShort(res, 200, true, 'Profile picture changes successfully')
+        resShort(
+            res,
+            200,
+            true,
+            'Profile picture changes successfully' + result.path
+        )
     } catch (error) {
         catchError(error, res)
     }

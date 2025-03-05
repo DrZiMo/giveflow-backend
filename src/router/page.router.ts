@@ -16,6 +16,7 @@ import {
 import { authenticate } from '../../middleware/authenticate'
 import { authorize } from '../../middleware/authorize'
 import { ROLE } from '@prisma/client'
+import upload from '../../middleware/multer'
 
 const router = Router()
 
@@ -25,8 +26,18 @@ router.post('/search', searchPage)
 router.get('/user', authenticate, getUserPages)
 router.post('/new', authenticate, createPage)
 router.put('/update', authenticate, updatePage)
-router.post('/profile-pic', authenticate, changeProfilePic)
-router.post('/cover-pic', authenticate, changeCoverPic)
+router.post(
+    '/profile-pic',
+    authenticate,
+    upload.single('profilePic'),
+    changeProfilePic
+)
+router.post(
+    '/cover-pic',
+    authenticate,
+    upload.single('coverPic'),
+    changeCoverPic
+)
 router.post('/delete-temp', authenticate, deletePageTemp)
 router.get(
     '/recycle-bin',

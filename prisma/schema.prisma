@@ -32,6 +32,7 @@ model user {
   phone_number             String
   password                 String
   profile_pic              String              @default("")
+  profile_pic_public_id    String              @default("")
   role                     ROLE
   is_anonymous             Boolean             @default(false)
   is_verified              Boolean             @default(false)
@@ -53,18 +54,20 @@ model user {
 }
 
 model giving_page {
-  id            String     @id @default(uuid())
-  name          String     @unique
-  description   String
-  profile_pic   String
-  cover_pic     String
-  created_by_id Int
-  is_verified   Boolean    @default(false)
-  is_deleted    Boolean    @default(false)
-  created_at    DateTime   @default(now())
-  updated_at    DateTime   @updatedAt
-  cause         cause[]
-  follower      follower[]
+  id                    String     @id @default(uuid())
+  name                  String     @unique
+  description           String
+  profile_pic           String     @default("")
+  profile_pic_public_id String     @default("")
+  cover_pic             String     @default("")
+  cover_pic_public_id   String     @default("")
+  created_by_id         Int
+  is_verified           Boolean    @default(false)
+  is_deleted            Boolean    @default(false)
+  created_at            DateTime   @default(now())
+  updated_at            DateTime   @updatedAt
+  cause                 cause[]
+  follower              follower[]
 }
 
 model cause {
