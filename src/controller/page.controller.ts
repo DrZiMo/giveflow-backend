@@ -292,13 +292,13 @@ export const removeProfilePic = async (req: Request, res: Response) => {
     try {
         const { id, public_id }: IRemoveProfilePic = req.body
 
-        if(!id) {
-            resShort(res, 400, false, "You must provide the giving page id")
+        if (!id) {
+            resShort(res, 400, false, 'You must provide the giving page id')
             return
         }
 
-        if(!public_id) {
-            resShort(res, 400, false, "You must provide the public id")
+        if (!public_id) {
+            resShort(res, 400, false, 'You must provide the public id')
             return
         }
 
@@ -313,8 +313,8 @@ export const removeProfilePic = async (req: Request, res: Response) => {
 
         const result = await cloudinary.uploader.destroy(public_id)
 
-        if (result.result !== "ok") {
-            res.status(400).json({ error: "Failed to delete image" });
+        if (result.result !== 'ok') {
+            res.status(400).json({ error: 'Failed to delete image' })
             return
         }
 
@@ -324,7 +324,7 @@ export const removeProfilePic = async (req: Request, res: Response) => {
         })
 
         resShort(res, 200, true, 'Profile picture removed successfullly')
-    } catch(error) {
+    } catch (error) {
         catchError(error, res)
     }
 }
@@ -334,13 +334,13 @@ export const removeCoverPic = async (req: Request, res: Response) => {
     try {
         const { id, public_id }: IRemoveProfilePic = req.body
 
-        if(!id) {
-            resShort(res, 400, false, "You must provide the giving page id")
+        if (!id) {
+            resShort(res, 400, false, 'You must provide the giving page id')
             return
         }
 
-        if(!public_id) {
-            resShort(res, 400, false, "You must provide the public id")
+        if (!public_id) {
+            resShort(res, 400, false, 'You must provide the public id')
             return
         }
 
@@ -355,8 +355,8 @@ export const removeCoverPic = async (req: Request, res: Response) => {
 
         const result = await cloudinary.uploader.destroy(public_id)
 
-        if (result.result !== "ok") {
-            res.status(400).json({ error: "Failed to delete image" });
+        if (result.result !== 'ok') {
+            res.status(400).json({ error: 'Failed to delete image' })
             return
         }
 
@@ -366,7 +366,7 @@ export const removeCoverPic = async (req: Request, res: Response) => {
         })
 
         resShort(res, 200, true, 'Profile picture removed successfullly')
-    } catch(error) {
+    } catch (error) {
         catchError(error, res)
     }
 }
