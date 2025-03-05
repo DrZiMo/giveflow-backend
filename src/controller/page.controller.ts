@@ -213,7 +213,7 @@ export const changeProfilePic = async (req: Request, res: Response) => {
             return
         }
 
-        if (!req.file || req.file.path) {
+        if (!req.file || !req.file.path) {
             resShort(res, 404, false, 'No file request sent')
             return
         }
@@ -248,7 +248,7 @@ export const changeProfilePic = async (req: Request, res: Response) => {
             res,
             200,
             true,
-            'Profile picture changes successfully' + result.path
+            'Profile picture changes successfully ' + result.path
         )
     } catch (error) {
         catchError(error, res)

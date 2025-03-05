@@ -10,7 +10,7 @@ app.use(express.json())
 app.use(cookieParser())
 
 app.use('/api/auth', userRouter)
-app.use('/api/users', pageRouter)
+app.use('/api/pages', pageRouter)
 
 const PORT = process.env.PORT || 3002
 
