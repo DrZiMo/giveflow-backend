@@ -7,6 +7,7 @@ import {
     IChangeProfilePic,
     ICreatePage,
     IDeletePageTemp,
+    IRemoveProfilePic,
     IRestorePage,
     ISeacrPage,
     ISinglePage,
@@ -282,6 +283,90 @@ export const changeCoverPic = async (req: Request, res: Response) => {
 
         resShort(res, 200, true, 'Cover picture changes successfully')
     } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// remove the profile picture
+export const removeProfilePic = async (req: Request, res: Response) => {
+    try {
+        const { id, public_id }: IRemoveProfilePic = req.body
+
+        if(!id) {
+            resShort(res, 400, false, "You must provide the giving page id")
+            return
+        }
+
+        if(!public_id) {
+            resShort(res, 400, false, "You must provide the public id")
+            return
+        }
+
+        const page = await prisma.giving_page.findFirst({
+            where: { id },
+        })
+
+        if (!page) {
+            resShort(res, 404, false, 'Giving page not found')
+            return
+        }
+
+        const result = await cloudinary.uploader.destroy(public_id)
+
+        if (result.result !== "ok") {
+            res.status(400).json({ error: "Failed to delete image" });
+            return
+        }
+
+        await prisma.giving_page.update({
+            where: { id },
+            data: { profile_pic: '', profile_pic_public_id: '' },
+        })
+
+        resShort(res, 200, true, 'Profile picture removed successfullly')
+    } catch(error) {
+        catchError(error, res)
+    }
+}
+
+// remove the cover picture
+export const removeCoverPic = async (req: Request, res: Response) => {
+    try {
+        const { id, public_id }: IRemoveProfilePic = req.body
+
+        if(!id) {
+            resShort(res, 400, false, "You must provide the giving page id")
+            return
+        }
+
+        if(!public_id) {
+            resShort(res, 400, false, "You must provide the public id")
+            return
+        }
+
+        const page = await prisma.giving_page.findFirst({
+            where: { id },
+        })
+
+        if (!page) {
+            resShort(res, 404, false, 'Giving page not found')
+            return
+        }
+
+        const result = await cloudinary.uploader.destroy(public_id)
+
+        if (result.result !== "ok") {
+            res.status(400).json({ error: "Failed to delete image" });
+            return
+        }
+
+        await prisma.giving_page.update({
+            where: { id },
+            data: { cover_pic: '', cover_pic_public_id: '' },
+        })
+
+        resShort(res, 200, true, 'Profile picture removed successfullly')
+    } catch(error) {
         catchError(error, res)
     }
 }

@@ -9,6 +9,8 @@ import {
     getDeletedPages,
     getSinglePage,
     getUserPages,
+    removeCoverPic,
+    removeProfilePic,
     restoreDeletedPage,
     searchPage,
     updatePage,
@@ -38,6 +40,8 @@ router.post(
     upload.single('coverPic'),
     changeCoverPic
 )
+router.post('/remove-profile-pic', authenticate, removeProfilePic)
+router.post('/remove-cover-pic', authenticate, removeCoverPic)
 router.post('/delete-temp', authenticate, deletePageTemp)
 router.get(
     '/recycle-bin',

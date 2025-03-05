@@ -30,6 +30,7 @@ import {
 import { authenticate } from '../../middleware/authenticate'
 import { authorize } from '../../middleware/authorize'
 import { ROLE } from '@prisma/client'
+import upload from '../../middleware/multer'
 
 const router = Router()
 
@@ -70,7 +71,7 @@ router.post('/change-role', authenticate, authorize([ROLE.ADMIN]), changeRole)
 router.post('/signup', signUp)
 router.post('/login', login)
 router.get('/phone-number', authenticate, addPhoneNumber)
-router.get('/profile-picture', authenticate, changeProfilePic)
+router.get('/profile-picture', authenticate, upload.single('profilePic'), changeProfilePic)
 router.get('/remove-profile-picture', authenticate, removeProfilePic)
 router.post('/anonymous', authenticate, toggleAnonymousUser)
 router.post('/send-code-email', authenticate, sendCodeEmail)

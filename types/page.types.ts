@@ -34,3 +34,8 @@ export interface IChangeCoverPic {
     id: string
     cover_pic: string
 }
+
+export interface IRemoveProfilePic {
+    id: string,
+    public_id: string
+}

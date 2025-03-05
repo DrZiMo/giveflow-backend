@@ -15,6 +15,7 @@ import { resShort } from '../../lib/response'
 import jwt from 'jsonwebtoken'
 import { generateCode } from '../../lib/generate.code'
 import { sendEmail } from '../../lib/send.email'
+import cloudinary from '../../utils/cloudinary'
 
 const prisma = new PrismaClient()
 
@@ -225,9 +226,7 @@ export const changeProfilePic = async (req: AuthRequest, res: Response) => {
             return
         }
 
-        const { profile_pic } = req.body
-
-        if (!profile_pic) {
+        if (!req.file || !req.file.path) {
             resShort(res, 400, false, 'No Image provided')
             return
         }
@@ -243,9 +242,15 @@ export const changeProfilePic = async (req: AuthRequest, res: Response) => {
             return
         }
 
+        const cloudinaryUploader = await cloudinary.uploader.upload(req.file.path, { folder: 'profile_pics' })
+        const result = {
+            path: cloudinaryUploader.secure_url,
+            public_id: cloudinaryUploader.public_id
+        }
+
         await prisma.user.update({
             where: { id: req.userId },
-            data: { profile_pic },
+            data: { profile_pic: result.path, profile_pic_public_id: result.public_id },
         })
 
         resShort(res, 200, true, 'Profile picture changed successfullly')
@@ -257,11 +262,18 @@ export const changeProfilePic = async (req: AuthRequest, res: Response) => {
 // remove the profile pic
 export const removeProfilePic = async (req: AuthRequest, res: Response) => {
     try {
-        // TODO: Add the cloudinary logic
         if (!req.userId) {
             resShort(res, 400, false, 'No user ID provided')
             return
         }
+
+        const { public_id }: { public_id: string } = req.body
+
+        if (!public_id) {
+            resShort(res, 400, false, "You must provide the public id")
+            return
+        }
+
         const user = await prisma.user.findFirst({
             where: {
                 id: req.userId,
@@ -273,9 +285,16 @@ export const removeProfilePic = async (req: AuthRequest, res: Response) => {
             return
         }
 
+        const result = await cloudinary.uploader.destroy(public_id)
+
+        if (result.result !== "ok") {
+            res.status(400).json({ error: "Failed to delete image" });
+            return
+        }
+
         await prisma.user.update({
             where: { id: req.userId },
-            data: { profile_pic: '' },
+            data: { profile_pic: '', profile_pic_public_id: '' },
         })
 
         resShort(res, 200, true, 'Profile picture removed successfullly')
