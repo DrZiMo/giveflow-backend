@@ -8,13 +8,16 @@ import {
     IUpdateCause,
 } from '../../types/cause.types'
 import cloudinary from '../../utils/cloudinary'
+import { causeInclude } from '../../lib/include/cause.include'
 
 const prisma = new PrismaClient()
 
 // get all the causes
 export const getAllCauses = async (req: Request, res: Response) => {
     try {
-        const causes = await prisma.cause.findMany()
+        const causes = await prisma.cause.findMany({
+            include: causeInclude,
+        })
 
         if (!causes.length) {
             resShort(res, 404, false, 'No causes found')
@@ -42,6 +45,7 @@ export const getSingleCause = async (req: Request, res: Response) => {
 
         const cause = await prisma.cause.findFirst({
             where: { id },
+            include: causeInclude,
         })
 
         if (!cause) {
@@ -52,6 +56,192 @@ export const getSingleCause = async (req: Request, res: Response) => {
         res.status(200).json({
             ok: true,
             cause,
+        })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// get related causes
+export const getRelatedCauses = async (req: Request, res: Response) => {
+    try {
+        const { cause_id }: { cause_id: string } = req.body
+
+        if (!cause_id) {
+            resShort(res, 400, false, 'Enter the cause ID')
+            return
+        }
+
+        const cause = await prisma.cause.findFirst({
+            where: { id: cause_id },
+        })
+
+        if (!cause) {
+            resShort(res, 404, false, 'Cause is not found')
+            return
+        }
+
+        const relatedCauses = await prisma.cause.findMany({
+            where: { category_id: cause.category_id },
+            include: causeInclude,
+            take: 10,
+        })
+
+        if (!relatedCauses.length) {
+            resShort(res, 404, false, 'No related causes found')
+            return
+        }
+
+        res.status(200).json({
+            ok: true,
+            causes: relatedCauses,
+        })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// get all featured causes
+export const getFeaturedCauses = async (req: Request, res: Response) => {
+    try {
+        const causes = await prisma.cause.findMany({
+            where: { is_featured: true },
+            include: causeInclude,
+        })
+
+        if (!causes.length) {
+            resShort(res, 404, false, 'No featured causes')
+            return
+        }
+
+        res.status(200).json({
+            ok: true,
+            causes,
+        })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// get temperorly deleted causes
+export const getDeletedCauses = async (req: Request, res: Response) => {
+    try {
+        const deletedCauses = await prisma.cause.findMany({
+            where: { is_deleted: true },
+            include: causeInclude,
+        })
+
+        if (!deletedCauses.length) {
+            resShort(res, 404, false, 'No deleted causes found')
+            return
+        }
+
+        res.status(200).json({
+            ok: true,
+            causes: deletedCauses,
+        })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// search the cause
+export const searchCause = async (req: Request, res: Response) => {
+    try {
+        const { name }: { name: string } = req.body
+
+        if (!name) {
+            resShort(res, 400, false, 'Enter the name')
+            return
+        }
+
+        const causes = await prisma.cause.findMany({
+            where: {
+                name: { contains: name },
+            },
+            include: causeInclude,
+        })
+
+        if (!causes.length) {
+            resShort(res, 404, false, 'No causes found')
+            return
+        }
+
+        res.status(200).json({
+            ok: false,
+            causes,
+        })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// get cause by category
+export const causeByCategory = async (req: Request, res: Response) => {
+    try {
+        const { category_id }: { category_id: string } = req.body
+
+        if (!category_id) {
+            resShort(res, 400, false, 'Enter the category ID')
+            return
+        }
+
+        const category = await prisma.category.findFirst({
+            where: { id: category_id },
+        })
+
+        if (!category) {
+            resShort(res, 404, false, 'Category is not found')
+            return
+        }
+
+        const causes = await prisma.cause.findMany({
+            where: { category_id },
+            include: causeInclude,
+        })
+
+        if (!causes.length) {
+            resShort(res, 404, false, 'No causes found')
+            return
+        }
+
+        res.status(200).json({
+            ok: true,
+            causes,
+        })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// get cause by category
+export const causeByUrgencyLevel = async (req: Request, res: Response) => {
+    try {
+        const { urgency_level }: { urgency_level: URGENCY_LEVEL } = req.body
+
+        if (!urgency_level) {
+            resShort(res, 400, false, 'Enter the urgency level')
+            return
+        }
+
+        if (!Object.values(URGENCY_LEVEL).includes(urgency_level)) {
+            resShort(res, 404, false, 'Urgency level is not valid')
+            return
+        }
+
+        const causes = await prisma.cause.findMany({
+            where: { urgency_level },
+            include: causeInclude,
+        })
+
+        if (!causes.length) {
+            resShort(res, 404, false, 'No causes found')
+            return
+        }
+
+        res.status(200).json({
+            ok: true,
+            causes,
         })
     } catch (error) {
         catchError(error, res)
@@ -136,6 +326,7 @@ export const addNewCause = async (req: Request, res: Response) => {
                 urgency_level,
                 expiration_date,
             },
+            include: causeInclude,
         })
 
         res.status(200).json({
@@ -300,12 +491,91 @@ export const updateCause = async (req: Request, res: Response) => {
                 expiration_date,
                 urgency_level,
             },
+            include: causeInclude,
         })
 
         res.status(200).json({
             ok: true,
             cause: updatedCause,
         })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// get trending causes
+export const getTrendingCauses = async (req: Request, res: Response) => {
+    try {
+        const trendingCauses = await prisma.cause.findMany({
+            where: {
+                is_deleted: false,
+                is_expired: false,
+                donation: {
+                    some: {
+                        donated_at: {
+                            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                        },
+                    },
+                },
+            },
+            orderBy: {
+                donation: {
+                    _count: 'desc',
+                },
+            },
+            include: causeInclude,
+        })
+
+        if (!trendingCauses.length) {
+            resShort(res, 404, false, 'No Trending causes at the moment')
+            return
+        }
+
+        res.status(200).json({
+            ok: true,
+            causes: trendingCauses,
+        })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// toggle featured
+export const toggleFeatured = async (req: Request, res: Response) => {
+    try {
+        const { cause_id }: { cause_id: string } = req.body
+
+        if (!cause_id) {
+            resShort(res, 400, false, 'Enter the cause ID')
+            return
+        }
+
+        const cause = await prisma.cause.findFirst({
+            where: { id: cause_id },
+        })
+
+        if (!cause) {
+            resShort(res, 404, false, 'Cause is not found')
+            return
+        }
+
+        if (cause.is_featured) {
+            await prisma.cause.update({
+                where: { id: cause.id },
+                data: { is_featured: false },
+            })
+
+            resShort(res, 200, true, 'Cause is featured successfully')
+            return
+        } else {
+            await prisma.cause.update({
+                where: { id: cause.id },
+                data: { is_featured: true },
+            })
+
+            resShort(res, 200, true, 'Cause is unfeatured successfully')
+            return
+        }
     } catch (error) {
         catchError(error, res)
     }

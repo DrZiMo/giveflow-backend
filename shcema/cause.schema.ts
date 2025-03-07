@@ -22,3 +22,28 @@ export const CreateCauseSchema = [
         .isISO8601()
         .withMessage('Expiration date must be a valid date'),
 ]
+
+export const UpdateUserSchema = [
+    body('id').isString().withMessage('ID must be a string'),
+    body('name').optional().isString().withMessage('Name must be a string'),
+    body('short_description')
+        .optional()
+        .isString()
+        .withMessage('Short description must be a string'),
+    body('long_description')
+        .optional()
+        .isString()
+        .withMessage('Long description must be a string'),
+    body('amount_needed')
+        .optional()
+        .isNumeric()
+        .withMessage('Amount needed must be a number'),
+    body('urgency_level')
+        .optional()
+        .isString()
+        .withMessage('Urgency level must be a string'),
+    body('expiration_date')
+        .optional()
+        .isISO8601()
+        .withMessage('Expiration date must be a valid date'),
+]

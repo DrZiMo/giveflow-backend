@@ -1,8 +1,56 @@
 import { Router } from 'express'
-import { getAllCauses } from '../controller/cause.controller'
+import {
+    addNewCause,
+    causeByCategory,
+    causeByUrgencyLevel,
+    deleteCausePerm,
+    deleteCauseTemp,
+    getAllCauses,
+    getDeletedCauses,
+    getFeaturedCauses,
+    getRelatedCauses,
+    getSingleCause,
+    getTrendingCauses,
+    restoreCause,
+    searchCause,
+    toggleFeatured,
+    updateCause,
+} from '../controller/cause.controller'
+import { authenticate } from '../../middleware/authenticate'
+import { authorize } from '../../middleware/authorize'
+import { ROLE } from '@prisma/client'
 
 const router = Router()
 
 router.get('/all', getAllCauses)
+router.get('/detail', getSingleCause)
+router.get('/related', getRelatedCauses)
+router.get('/featured', getFeaturedCauses)
+router.get(
+    '/recycle-bin',
+    authenticate,
+    authorize([ROLE.ADMIN]),
+    getDeletedCauses
+)
+router.get('/trending', authenticate, getTrendingCauses)
+router.post('/search', searchCause)
+router.post('/category', causeByCategory)
+router.post('/urgency-level', causeByUrgencyLevel)
+router.post('/new', authenticate, addNewCause)
+router.post('/delete-temp', authenticate, deleteCauseTemp)
+router.post(
+    '/delete-perm',
+    authenticate,
+    authorize([ROLE.ADMIN]),
+    deleteCausePerm
+)
+router.post('/restore', authenticate, authorize([ROLE.ADMIN]), restoreCause)
+router.put('/update', authenticate, updateCause)
+router.post(
+    '/toggle-featured',
+    authenticate,
+    authorize([ROLE.ADMIN]),
+    toggleFeatured
+)
 
 export default router

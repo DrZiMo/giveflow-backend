@@ -94,6 +94,7 @@ model cause {
   current_amount      Float
   status              CAUSE_STATUS
   is_deleted          Boolean       @default(false)
+  is_featured         Boolean       @default(false)
   category_id         String
   urgency_level       URGENCY_LEVEL
   is_expired          Boolean       @default(false)
