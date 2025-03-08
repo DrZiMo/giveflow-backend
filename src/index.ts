@@ -15,6 +15,7 @@ app.use(cookieParser())
 app.use('/api/auth', userRouter)
 app.use('/api/pages', pageRouter)
 app.use('/api/causes', causeRouter)
+app.use('/api/searches', searchRouter)
 app.use('/api/categoryes', categoryRouter)
 
 const PORT = process.env.PORT || 3002
