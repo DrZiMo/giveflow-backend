@@ -46,7 +46,7 @@ model user {
   following                follower[]
   notification             notification[]
   like                     like[]
-  saveForLater             saveForLater[]
+  saveForLater             save_for_later[]
   review                   review[]
   reply                    reply[]
   search_history           search_history[]
@@ -102,13 +102,13 @@ model cause {
   created_at          DateTime      @default(now())
   updated_at          DateTime      @updatedAt
 
-  giving_page  giving_page    @relation(fields: [giving_page_id], references: [id], onDelete: Cascade)
-  category     category       @relation(fields: [category_id], references: [id], onDelete: Cascade)
+  giving_page  giving_page      @relation(fields: [giving_page_id], references: [id], onDelete: Cascade)
+  category     category         @relation(fields: [category_id], references: [id], onDelete: Cascade)
   donation     donation[]
   like         like[]
-  saveForLater saveForLater[]
+  saveForLater save_for_later[]
   review       review[]
-  user         user?          @relation(fields: [userId], references: [id])
+  user         user?            @relation(fields: [userId], references: [id])
   userId       Int?
   cause_image  cause_image[]
 }
@@ -175,7 +175,7 @@ model like {
   cause cause @relation(fields: [cause_id], references: [id], onDelete: Cascade)
 }
 
-model saveForLater {
+model save_for_later {
   id         String   @id @default(uuid())
   user_id    Int
   cause_id   String
