@@ -5,6 +5,7 @@ import userRouter from './router/user.router'
 import pageRouter from './router/page.router'
 import causeRouter from './router/cause.router'
 import searchRouter from './router/search.router'
+import categoryRouter from './router/category.router'
 
 const app = express()
 dotenv.config()
@@ -14,7 +15,7 @@ app.use(cookieParser())
 app.use('/api/auth', userRouter)
 app.use('/api/pages', pageRouter)
 app.use('/api/causes', causeRouter)
-app.use('/api/searches', searchRouter)
+app.use('/api/categoryes', categoryRouter)
 
 const PORT = process.env.PORT || 3002
 
