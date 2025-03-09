@@ -9,6 +9,7 @@ import {
 } from '../../types/cause.types'
 import cloudinary from '../../utils/cloudinary'
 import { causeInclude } from '../../lib/include/cause.include'
+import { sendNotification } from '../../lib/send.notification'
 
 const prisma = new PrismaClient()
 
@@ -329,7 +330,7 @@ export const addNewCause = async (req: Request, res: Response) => {
             include: causeInclude,
         })
 
-        res.status(200).json({
+        res.status(201).json({
             ok: false,
             cause: newCause,
         })
@@ -576,6 +577,68 @@ export const toggleFeatured = async (req: Request, res: Response) => {
             resShort(res, 200, true, 'Cause is unfeatured successfully')
             return
         }
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// verify cause by the admin
+export const verifyCause = async (req: Request, res: Response) => {
+    try {
+        const { cause_id }: { cause_id: string } = req.body
+
+        if (!cause_id) {
+            resShort(res, 400, false, 'Enter the cause ID')
+            return
+        }
+
+        const cause = await prisma.cause.findFirst({
+            where: { id: cause_id },
+        })
+
+        if (!cause) {
+            resShort(res, 404, false, 'Cause is not found')
+            return
+        }
+
+        if (cause.status === CAUSE_STATUS.VERIFIED) {
+            resShort(res, 400, false, 'Cause is already verified')
+            return
+        }
+
+        const verifiedCause = await prisma.cause.update({
+            where: { id: cause_id },
+            data: { status: CAUSE_STATUS.VERIFIED },
+            include: causeInclude,
+        })
+
+        const giving_page = await prisma.giving_page.findFirst({
+            where: { id: cause.giving_page_id },
+        })
+
+        if (!giving_page) {
+            resShort(res, 404, false, 'Giving page not found')
+            return
+        }
+
+        // notify followers
+        const followers = await prisma.follower.findMany({
+            where: { giving_page_id: cause.giving_page_id },
+            select: { user_id: true },
+        })
+
+        for (const follower of followers) {
+            await sendNotification(
+                follower.user_id,
+                `New cause from ${giving_page.name}`,
+                `A new cause named ${cause.name} has been added. Check it out! Visit the giving page for more details.`
+            )
+        }
+
+        res.status(200).json({
+            ok: true,
+            cause: verifiedCause,
+        })
     } catch (error) {
         catchError(error, res)
     }

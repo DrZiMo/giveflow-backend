@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { AuthRequest } from '../../types/request.types'
 import { catchError } from '../../lib/catch.error'
 import { resShort } from '../../lib/response'
+import { sendNotification } from '../../lib/send.notification'
 
 const prisma = new PrismaClient()
 
@@ -56,6 +57,16 @@ export const toggleSaveCause = async (req: AuthRequest, res: Response) => {
             return
         }
 
+        // get the giving page
+        const giving_page = await prisma.giving_page.findUnique({
+            where: { id: cause.giving_page_id },
+        })
+
+        if (!giving_page) {
+            resShort(res, 404, false, 'Giving page is not found')
+            return
+        }
+
         const isCauseSaved = await prisma.save_for_later.findFirst({
             where: { user_id: req.userId, cause_id },
         })
@@ -74,6 +85,12 @@ export const toggleSaveCause = async (req: AuthRequest, res: Response) => {
                     cause_id,
                 },
             })
+
+            await sendNotification(
+                giving_page.created_by_id,
+                'Cause Saved',
+                `Your cause "${cause.name}" has been saved by a user.`
+            )
 
             resShort(res, 200, true, 'Cause added to the save later')
             return

@@ -15,6 +15,7 @@ import {
     searchCause,
     toggleFeatured,
     updateCause,
+    verifyCause,
 } from '../controller/cause.controller'
 import { authenticate } from '../../middleware/authenticate'
 import { authorize } from '../../middleware/authorize'
@@ -52,5 +53,6 @@ router.post(
     authorize([ROLE.ADMIN]),
     toggleFeatured
 )
+router.post('/verify', authenticate, authorize([ROLE.ADMIN]), verifyCause)
 
 export default router
