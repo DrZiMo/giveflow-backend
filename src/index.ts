@@ -16,7 +16,7 @@ app.use('/api/auth', userRouter)
 app.use('/api/pages', pageRouter)
 app.use('/api/causes', causeRouter)
 app.use('/api/searches', searchRouter)
-app.use('/api/categoryes', categoryRouter)
+app.use('/api/categories', categoryRouter)
 
 const PORT = process.env.PORT || 3002
 
