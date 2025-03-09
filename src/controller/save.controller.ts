@@ -76,6 +76,7 @@ export const toggleSaveCause = async (req: AuthRequest, res: Response) => {
             })
 
             resShort(res, 200, true, 'Cause added to the save later')
+            return
         }
     } catch (error) {
         catchError(error, res)
