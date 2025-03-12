@@ -86,6 +86,7 @@ export const signUp = async (req: Request, res: Response) => {
             last_name,
             email,
             phone_number,
+            role,
             password,
             confirm_password,
         }: ISingUpUser = req.body
@@ -118,6 +119,11 @@ export const signUp = async (req: Request, res: Response) => {
             }
         }
 
+        if (role && !Object.values(ROLE).includes(role)) {
+            resShort(res, 400, false, "Invalid role")
+            return
+        }
+
         if (password !== confirm_password) {
             resShort(
                 res,
@@ -137,7 +143,7 @@ export const signUp = async (req: Request, res: Response) => {
                 email,
                 phone_number: '',
                 password: hashedPassword,
-                role: ROLE.USER,
+                role: role ? role : ROLE.USER,
                 is_anonymous: false,
                 is_deleted: false,
                 is_verified: false,

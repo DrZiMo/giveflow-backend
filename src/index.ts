@@ -8,6 +8,7 @@ import searchRouter from './router/search.router'
 import categoryRouter from './router/category.router'
 import saveRouter from './router/save.router'
 import notificationRouter from './router/notification.router'
+import followerRouter from './router/follower.router'
 
 const app = express()
 dotenv.config()
@@ -21,8 +22,8 @@ app.use('/api/searches', searchRouter)
 app.use('/api/categories', categoryRouter)
 app.use('/api/saves', saveRouter)
 app.use('/api/notifications', notificationRouter)
+app.use('/api/followers', followerRouter)
 
 const PORT = process.env.PORT || 3002
 
-app.listen(PORT, () => console.log('Server is running on port: ', PORT))
 app.listen(PORT, () => console.log('Server is running on port: ', PORT))

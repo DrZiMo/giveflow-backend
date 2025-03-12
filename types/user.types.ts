@@ -1,3 +1,5 @@
+import { ROLE } from "@prisma/client"
+
 export interface ISearchUser {
     id: number
     first_name: string
@@ -11,6 +13,7 @@ export interface ISingUpUser {
     last_name: string
     email: string
     phone_number: string
+    role: ROLE
     password: string
     confirm_password: string
 }
