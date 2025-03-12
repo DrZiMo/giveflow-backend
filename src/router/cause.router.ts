@@ -3,6 +3,7 @@ import {
     addNewCause,
     causeByCategory,
     causeByUrgencyLevel,
+    causePicture,
     deleteCausePerm,
     deleteCauseTemp,
     getAllCauses,
@@ -20,6 +21,7 @@ import {
 import { authenticate } from '../../middleware/authenticate'
 import { authorize } from '../../middleware/authorize'
 import { ROLE } from '@prisma/client'
+import upload from '../../middleware/multer'
 
 const router = Router()
 
@@ -37,7 +39,8 @@ router.get('/trending', authenticate, getTrendingCauses)
 router.post('/search', searchCause)
 router.post('/category', causeByCategory)
 router.post('/urgency-level', causeByUrgencyLevel)
-router.post('/new', authenticate, addNewCause)
+router.post('/new', authenticate, upload.single('causePic'), addNewCause)
+router.post('/cause-pic', authenticate, upload.single('causePic'), causePicture)
 router.post('/delete-temp', authenticate, deleteCauseTemp)
 router.post(
     '/delete-perm',

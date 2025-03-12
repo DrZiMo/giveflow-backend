@@ -9,6 +9,7 @@ import categoryRouter from './router/category.router'
 import saveRouter from './router/save.router'
 import notificationRouter from './router/notification.router'
 import followerRouter from './router/follower.router'
+import donationRouter from './router/donation.router'
 
 const app = express()
 dotenv.config()
@@ -23,6 +24,7 @@ app.use('/api/categories', categoryRouter)
 app.use('/api/saves', saveRouter)
 app.use('/api/notifications', notificationRouter)
 app.use('/api/followers', followerRouter)
+app.use('/api/donations', donationRouter)
 
 const PORT = process.env.PORT || 3002
 

@@ -263,11 +263,6 @@ export const addNewCause = async (req: Request, res: Response) => {
             expiration_date,
         }: IAddNewCause = req.body
 
-        if (!req.file || !req.file.path) {
-            resShort(res, 400, false, 'No file request found')
-            return
-        }
-
         if (
             !giving_page_id ||
             !name ||
@@ -303,23 +298,26 @@ export const addNewCause = async (req: Request, res: Response) => {
             return
         }
 
-        const cloudinaryUpload = await cloudinary.uploader.upload(
-            req.file.path,
-            { folder: 'cause_pics' }
-        )
-        const result = {
-            path: cloudinaryUpload.secure_url,
-            public_id: cloudinaryUpload.public_id,
+        let result = null;
+        if(req.file && req.file.path) {
+            const cloudinaryUpload = await cloudinary.uploader.upload(
+                req.file.path,
+                { folder: 'cause_pics' }
+            )
+            result = {
+                path: cloudinaryUpload.secure_url,
+                public_id: cloudinaryUpload.public_id,
+            }
         }
-
+        
         const newCause = await prisma.cause.create({
             data: {
                 giving_page_id,
                 name,
                 short_description: short_description ? short_description : '',
                 long_description: long_description ? long_description : '',
-                cause_pic: result.path,
-                cause_pic_public_id: result.public_id,
+                cause_pic: result ? result.path : '',
+                cause_pic_public_id: result ? result.public_id : '',
                 amount_needed,
                 current_amount: 0,
                 status: CAUSE_STATUS.PENDING,
@@ -333,6 +331,55 @@ export const addNewCause = async (req: Request, res: Response) => {
         res.status(201).json({
             ok: false,
             cause: newCause,
+        })
+    } catch (error) {
+        catchError(error, res)
+    }
+}
+
+// change cause picture
+export const causePicture = async (req: Request, res: Response) => {
+    try {
+        const {cause_id}: {cause_id: string} = req.body
+
+        if(!cause_id) {
+            resShort(res, 400, false, "Enter the cause ID")
+            return
+        }
+
+        const cause = await prisma.cause.findUnique({
+            where: {id: cause_id}
+        })
+
+        if(!cause) {
+            resShort(res, 404, false, "Cause is not found")
+            return
+        }
+
+        if(!req.file || !req.file.path) {
+            resShort(res, 400, false, "No file request found")
+            return
+        }
+
+        if(cause.cause_pic !== '') {
+            await cloudinary.uploader.destroy(cause.cause_pic_public_id)
+        }
+
+        const cloudinaryUpload = await cloudinary.uploader.upload(
+            req.file.path,
+            { folder: 'cause_pics' }
+        )
+        const result = {
+            path: cloudinaryUpload.secure_url,
+            public_id: cloudinaryUpload.public_id,
+        }
+
+        await prisma.cause.update({
+            where: {id: cause.id},
+            data: {
+                cause_pic: result.path,
+                cause_pic_public_id: result.public_id
+            }
         })
     } catch (error) {
         catchError(error, res)

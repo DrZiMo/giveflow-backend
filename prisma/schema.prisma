@@ -136,6 +136,7 @@ model donation {
   id         String   @id @default(uuid())
   user_id    Int
   cause_id   String
+  amount     Float
   donated_at DateTime @default(now())
 
   user  user  @relation(fields: [user_id], references: [id], onDelete: Cascade)
