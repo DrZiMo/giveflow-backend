@@ -571,6 +571,7 @@ export const getTrendingCauses = async (req: Request, res: Response) => {
                     _count: 'desc',
                 },
             },
+            take: 10,
             include: causeInclude,
         })
 
@@ -578,6 +579,28 @@ export const getTrendingCauses = async (req: Request, res: Response) => {
             resShort(res, 404, false, 'No Trending causes at the moment')
             return
         }
+
+        await prisma.cause.updateMany({
+            where: {
+                id: {
+                    in: trendingCauses.map((cause) => cause.id),
+                },
+            },
+            data: {
+                is_trending: true
+            },
+        })
+
+        await prisma.cause.updateMany({
+            where: {
+                id: {
+                    notIn: trendingCauses.map((cause) => cause.id),
+                },
+            },
+            data: {
+                is_trending: false,
+            },
+        })
 
         res.status(200).json({
             ok: true,
