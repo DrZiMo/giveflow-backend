@@ -10,11 +10,24 @@ import saveRouter from './router/save.router'
 import notificationRouter from './router/notification.router'
 import followerRouter from './router/follower.router'
 import donationRouter from './router/donation.router'
+import morgan from "morgan"
+import cors from "cors"
 
 const app = express()
 dotenv.config()
+
+if(process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'))
+}
+
 app.use(express.json())
 app.use(cookieParser())
+
+app.use(
+    cors({
+        origin: [process.env.FRONT_END_URL as string]
+    })
+)
 
 app.use('/api/auth', userRouter)
 app.use('/api/pages', pageRouter)

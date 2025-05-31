@@ -3,7 +3,8 @@
     "version": "1.0.0",
     "main": "index.js",
     "scripts": {
-        "start": "nodemon src/index.ts"
+        "start": "nodemon src/index.ts",
+        "start:prod": "NODE_ENV=production nodemon src/index.ts"
     },
     "keywords": [],
     "author": "",
@@ -19,10 +20,12 @@
         "argon2": "^0.41.1",
         "cloudinary": "^2.5.1",
         "cookie-parser": "^1.4.7",
+        "cors": "^2.8.5",
         "dotenv": "^16.4.7",
         "express": "^4.21.2",
         "express-validator": "^7.2.1",
         "jsonwebtoken": "^9.0.2",
+        "morgan": "^1.10.0",
         "multer": "^1.4.5-lts.1",
         "nodemailer": "^6.10.0",
         "nodemon": "^3.1.9",
@@ -30,5 +33,18 @@
         "stripe": "^17.7.0",
         "ts-node": "^10.9.2",
         "typescript": "^5.7.3"
+    },
+    "devDependencies": {
+        "@types/cors": "^2.8.18",
+        "@types/morgan": "^1.9.9",
+        "eslint": "^8.57.1",
+        "eslint-config-airbnb": "^19.0.4",
+        "eslint-config-prettier": "^10.1.5",
+        "eslint-plugin-import": "^2.31.0",
+        "eslint-plugin-jsx-a11y": "^6.10.2",
+        "eslint-plugin-node": "^11.1.0",
+        "eslint-plugin-prettier": "^5.4.1",
+        "eslint-plugin-react": "^7.37.5",
+        "prettier": "^3.5.3"
     }
 }
