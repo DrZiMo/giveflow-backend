@@ -226,7 +226,6 @@ export const addPhoneNumber = async (req: AuthRequest, res: Response) => {
 // change profile pic
 export const changeProfilePic = async (req: AuthRequest, res: Response) => {
     try {
-        // TODO: Add the cloudinary logic
         if (!req.userId) {
             resShort(res, 400, false, 'No user ID provided')
             return
@@ -236,6 +235,7 @@ export const changeProfilePic = async (req: AuthRequest, res: Response) => {
             resShort(res, 400, false, 'No Image provided')
             return
         }
+
 
         const user = await prisma.user.findFirst({
             where: {
