@@ -1,30 +1,29 @@
-import { ROLE } from "@prisma/client"
+import { ROLE } from '@prisma/client'
 
 export interface ISearchUser {
-    id: number
-    first_name: string
-    last_name: string
-    email: string
-    phone_number: string
+  id: number
+  first_name: string
+  last_name: string
+  email: string
+  phone_number: string
 }
 
 export interface ISingUpUser {
-    first_name: string
-    last_name: string
-    email: string
-    phone_number: string
-    role: ROLE
-    password: string
-    confirm_password: string
+  first_name: string
+  last_name: string
+  email: string
+  phone_number: string
+  password: string
+  confirm_password: string
 }
 
 export interface ILoginUser {
-    email: string
-    password: string
+  email: string
+  password: string
 }
 
 export interface IUpdateUser {
-    id: number
-    first_name: string
-    last_name: string
+  id: number
+  first_name: string
+  last_name: string
 }
