@@ -155,13 +155,16 @@ export const login = async (req: Request, res: Response) => {
       return
     }
 
-    const user = await prisma.user.findFirst({ where: { email } })
+    const user = await prisma.user.findFirst({
+      where: { email },
+    })
 
     if (!user) {
       resShort(res, 400, false, 'Invalid credentials')
       return
     }
 
+    const { password: _, ...safeUser } = user
     const isPassword = await argon2.verify(user.password, password)
 
     if (!isPassword) {
@@ -170,7 +173,7 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const { accessToken } = generateToken(user.id, res)
-    res.status(200).json({ ok: true, user, token: accessToken })
+    res.status(200).json({ ok: true, user: safeUser, token: accessToken })
   } catch (error) {
     catchError(error, res)
   }
