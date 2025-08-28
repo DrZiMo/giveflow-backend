@@ -43,48 +43,15 @@ model user {
   updated_at               DateTime            @updatedAt
   cause                    cause[]
   donation                 donation[]
-  following                follower[]
   notification             notification[]
   like                     like[]
   saveForLater             save_for_later[]
-  review                   review[]
-  reply                    reply[]
-  search_history           search_history[]
   verification_code        verification_code[]
-}
-
-model giving_page {
-  id                    String               @id @default(uuid())
-  name                  String               @unique
-  description           String
-  profile_pic           String               @default("")
-  profile_pic_public_id String               @default("")
-  cover_pic             String               @default("")
-  cover_pic_public_id   String               @default("")
-  created_by_id         Int
-  is_verified           Boolean              @default(false)
-  is_deleted            Boolean              @default(false)
-  created_at            DateTime             @default(now())
-  updated_at            DateTime             @updatedAt
-  cause                 cause[]
-  follower              follower[]
-  giving_page_images    giving_page_images[]
-}
-
-model giving_page_images {
-  id             String   @id @default(uuid())
-  giving_page_id String
-  link           String
-  public_id      String
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
-
-  giving_page giving_page @relation(fields: [giving_page_id], references: [id], onDelete: Cascade)
 }
 
 model cause {
   id                  String        @id @default(uuid())
-  giving_page_id      String
+  user_id             Int
   name                String
   short_description   String?
   long_description    String?
@@ -103,14 +70,11 @@ model cause {
   created_at          DateTime      @default(now())
   updated_at          DateTime      @updatedAt
 
-  giving_page  giving_page      @relation(fields: [giving_page_id], references: [id], onDelete: Cascade)
   category     category         @relation(fields: [category_id], references: [id], onDelete: Cascade)
   donation     donation[]
   like         like[]
   saveForLater save_for_later[]
-  review       review[]
-  user         user?            @relation(fields: [userId], references: [id])
-  userId       Int?
+  user         user             @relation(fields: [user_id], references: [id])
   cause_image  cause_image[]
 }
 
@@ -142,16 +106,6 @@ model donation {
 
   user  user  @relation(fields: [user_id], references: [id], onDelete: Cascade)
   cause cause @relation(fields: [cause_id], references: [id], onDelete: Cascade)
-}
-
-model follower {
-  id             String   @id @default(uuid())
-  user_id        Int
-  giving_page_id String
-  followed_at    DateTime @default(now())
-
-  user        user        @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  giving_page giving_page @relation(fields: [giving_page_id], references: [id], onDelete: Cascade)
 }
 
 model notification {
@@ -186,41 +140,6 @@ model save_for_later {
 
   user  user  @relation(fields: [user_id], references: [id], onDelete: Cascade)
   cause cause @relation(fields: [cause_id], references: [id], onDelete: Cascade)
-}
-
-model search_history {
-  id         String   @id @default(uuid())
-  user_id    Int
-  search     String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
-}
-
-model review {
-  id         String   @id @default(uuid())
-  user_id    Int
-  cause_id   String
-  message    String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  user    user    @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  cause   cause   @relation(fields: [cause_id], references: [id], onDelete: Cascade)
-  replies reply[]
-}
-
-model reply {
-  id         String   @id @default(uuid())
-  user_id    Int
-  review_id  String
-  message    String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-
-  user   user   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  review review @relation(fields: [review_id], references: [id], onDelete: Cascade)
 }
 
 model verification_code {
