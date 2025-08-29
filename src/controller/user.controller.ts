@@ -172,8 +172,8 @@ export const login = async (req: Request, res: Response) => {
       return
     }
 
-    const { accessToken } = generateToken(user.id, res)
-    res.status(200).json({ ok: true, user: safeUser, token: accessToken })
+    const tokens = generateToken(user.id, res)
+    res.status(200).json({ ok: true, user: safeUser })
   } catch (error) {
     catchError(error, res)
   }
@@ -212,15 +212,16 @@ export const addPhoneNumber = async (req: AuthRequest, res: Response) => {
 // change profile pic
 export const changeProfilePic = async (req: AuthRequest, res: Response) => {
   try {
+    const { profile_pic } = req.body
     if (!req.userId) {
       resShort(res, 400, false, 'No user ID provided')
       return
     }
 
-    if (!req.file || !req.file.path) {
-      resShort(res, 400, false, 'No Image provided')
-      return
-    }
+    // if (!req.file || !req.file.path) {
+    //   resShort(res, 400, false, 'No Image provided')
+    //   return
+    // }
 
     const user = await prisma.user.findFirst({
       where: {
@@ -233,19 +234,20 @@ export const changeProfilePic = async (req: AuthRequest, res: Response) => {
       return
     }
 
-    const cloudinaryUploader = await cloudinary.uploader.upload(req.file.path, {
-      folder: 'profile_pics',
-    })
-    const result = {
-      path: cloudinaryUploader.secure_url,
-      public_id: cloudinaryUploader.public_id,
-    }
+    // const cloudinaryUploader = await cloudinary.uploader.upload(req.file.path, {
+    //   folder: 'profile_pics',
+    // })
+    // const result = {
+    //   path: cloudinaryUploader.secure_url,
+    //   public_id: cloudinaryUploader.public_id,
+    // }
 
     await prisma.user.update({
       where: { id: req.userId },
       data: {
-        profile_pic: result.path,
-        profile_pic_public_id: result.public_id,
+        // profile_pic: result.path,
+        // profile_pic_public_id: result.public_id,
+        profile_pic,
       },
     })
 
@@ -320,7 +322,10 @@ export const logout = async (req: AuthRequest, res: Response) => {
 // who am i end point
 export const whoami = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await prisma.user.findFirst({ where: { id: req.userId } })
+    const user = await prisma.user.findFirst({
+      where: { id: req.userId },
+      select: userSelect,
+    })
 
     if (!user) {
       resShort(res, 404, false, 'User not found')
@@ -993,12 +998,13 @@ export const refreshToken = async (req: Request, res: Response) => {
 
     const accessToken = jwt.sign(
       { userId: decode.userId },
-      process.env.JWT_ACCESS_SECRET as string
+      process.env.JWT_ACCESS_SECRET as string,
+      { expiresIn: '15m' }
     )
 
-    res.cookie('token', accessToken, {
+    res.cookie('access_token', accessToken, {
       maxAge: 15 * 60 * 1000,
-      sameSite: 'strict',
+      sameSite: 'lax',
       httpOnly: true,
     })
 
