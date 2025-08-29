@@ -304,14 +304,14 @@ export const removeProfilePic = async (req: AuthRequest, res: Response) => {
 // logout
 export const logout = async (req: AuthRequest, res: Response) => {
   try {
-    const token = req.cookies.token
+    const token = req.cookies.access_token
 
     if (!token) {
       resShort(res, 400, false, 'Already logged out')
       return
     }
 
-    res.clearCookie('token')
+    res.clearCookie('access_token')
     res.clearCookie('refresh_token')
     resShort(res, 200, true, 'Logged out successfully')
   } catch (error) {
