@@ -372,9 +372,9 @@ export const whoami = async (req: AuthRequest, res: Response) => {
 }
 
 // delete user temperorly
-export const deleteUserTemp = async (req: Request, res: Response) => {
+export const deleteUserTemp = async (req: AuthRequest, res: Response) => {
   try {
-    const { id } = req.body
+    const id = req.userId
 
     if (!id) {
       resShort(res, 400, false, 'You must provide ID')
@@ -1128,6 +1128,40 @@ export const changePassword = async (req: AuthRequest, res: Response) => {
     })
 
     resShort(res, 200, true, 'Password successfully changed')
+  } catch (error) {
+    catchError(error, res)
+  }
+}
+
+// updating the privacy settings
+export const updatePrivacySettings = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const userId = req.userId
+    const { is_public, is_history_visible, is_anonymous } = req.body
+
+    if (!userId) {
+      resShort(res, 400, false, 'User not found')
+      return
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!user) {
+      resShort(res, 404, false, 'User not found')
+      return
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { is_public, is_history_visible, is_anonymous },
+    })
+
+    resShort(res, 200, true, 'Privacy settings updated successfully')
   } catch (error) {
     catchError(error, res)
   }

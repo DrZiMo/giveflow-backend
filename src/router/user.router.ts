@@ -23,6 +23,7 @@ import {
   toggleAnonymousUser,
   toggleHistoryVisibility,
   toggleProfileVisibility,
+  updatePrivacySettings,
   updateUser,
   updateUserAdmin,
   verifyEmail,
@@ -87,5 +88,6 @@ router.get('/refresh-token', refreshToken)
 router.get('/toggle-profile-visibility', authenticate, toggleProfileVisibility)
 router.get('/toggle-history-visibility', authenticate, toggleHistoryVisibility)
 router.put('/change-password', authenticate, changePassword)
+router.put('/update-privacy-settings', authenticate, updatePrivacySettings)
 
 export default router
