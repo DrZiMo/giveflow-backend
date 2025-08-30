@@ -9,6 +9,7 @@ import {
   getAllUsers,
   getDeletedUsers,
   getSingleUser,
+  getUsers,
   login,
   logout,
   refreshToken,
@@ -35,7 +36,8 @@ import upload from '../../middleware/multer'
 const router = Router()
 
 router.get('/all', authenticate, authorize([ROLE.ADMIN]), getAllUsers)
-router.post('/search', authenticate, authorize([ROLE.ADMIN]), getSingleUser)
+router.get('/search', authenticate, authorize([ROLE.ADMIN]), getUsers)
+router.post('/single-user', authenticate, getSingleUser)
 router.get(
   '/recycle-pin',
   authenticate,

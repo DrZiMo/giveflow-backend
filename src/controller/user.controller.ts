@@ -38,8 +38,8 @@ export const getAllUsers = async (req: Request, res: Response) => {
   }
 }
 
-// get single user by id, email, first name last name
-export const getSingleUser = async (req: Request, res: Response) => {
+// get users by id, email, first name last name
+export const getUsers = async (req: Request, res: Response) => {
   try {
     const { id, email, phone_number, first_name, last_name }: ISearchUser =
       req.body
@@ -73,6 +73,27 @@ export const getSingleUser = async (req: Request, res: Response) => {
     }
 
     res.status(200).json({ ok: true, users })
+  } catch (error) {
+    catchError(error, res)
+  }
+}
+
+// get single user by id
+export const getSingleUser = async (req: Request, res: Response) => {
+  try {
+    const { id }: { id: number } = req.body
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: userSelect,
+    })
+
+    if (!user) {
+      resShort(res, 404, false, 'User not found')
+      return
+    }
+
+    res.status(200).json({ ok: true, user })
   } catch (error) {
     catchError(error, res)
   }
