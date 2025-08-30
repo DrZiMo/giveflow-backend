@@ -499,6 +499,10 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
       return
     }
 
+    if (!first_name && !last_name) {
+      resShort(res, 400, false, 'Enter the first name or the last name')
+    }
+
     await prisma.user.update({
       where: { id: req.userId },
       data: {
@@ -508,6 +512,7 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
     })
 
     resShort(res, 200, true, 'User updated successfully')
+    return
   } catch (error) {
     catchError(error, res)
   }
