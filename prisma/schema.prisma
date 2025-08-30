@@ -157,7 +157,7 @@ model verification_code {
 
 model user_settings {
   id                  String   @id @default(uuid())
-  user_id             Int
+  user_id             Int      @unique
   email_notifications Boolean  @default(false)
   sms_notifications   Boolean  @default(false)
   push_notifications  Boolean  @default(false)

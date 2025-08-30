@@ -49,8 +49,7 @@ export const createSetting = async (req: AuthRequest, res: Response) => {
 }
 
 // update a setting by id
-export const updateSetting = async (req: Request, res: Response) => {
-  const { id } = req.params
+export const updateSetting = async (req: AuthRequest, res: Response) => {
   const {
     email_notifications,
     sms_notifications,
@@ -62,7 +61,7 @@ export const updateSetting = async (req: Request, res: Response) => {
 
   try {
     const setting = await prisma.user_settings.update({
-      where: { id: id },
+      where: { user_id: req.userId! },
       data: {
         email_notifications,
         sms_notifications,
@@ -75,36 +74,5 @@ export const updateSetting = async (req: Request, res: Response) => {
     res.status(200).json({ ok: true, setting })
   } catch (error) {
     res.status(500).json({ ok: false, message: 'Failed to update setting' })
-  }
-
-  try {
-    const setting = await prisma.user_settings.update({
-      where: { id: id },
-      data: {
-        email_notifications,
-        sms_notifications,
-        push_notifications,
-        news_letter,
-        donation_receipts,
-        donation_reminds,
-      },
-    })
-    res.status(200).json({ ok: true, setting })
-  } catch (error) {
-    res.status(500).json({ ok: false, message: 'Failed to update setting' })
-  }
-}
-
-// delete a setting by id
-export const deleteSetting = async (req: Request, res: Response) => {
-  const { id } = req.params
-
-  try {
-    await prisma.user_settings.delete({
-      where: { id: id },
-    })
-    res.status(204).json({ ok: true })
-  } catch (error) {
-    res.status(500).json({ ok: false, message: 'Failed to delete setting' })
   }
 }

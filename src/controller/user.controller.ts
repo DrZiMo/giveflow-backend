@@ -150,6 +150,16 @@ export const signUp = async (req: Request, res: Response) => {
         role: ROLE.USER,
         is_anonymous: false,
         is_deleted: false,
+        user_settings: {
+          create: {
+            email_notifications: true,
+            sms_notifications: false,
+            push_notifications: false,
+            news_letter: false,
+            donation_receipts: false,
+            donation_reminds: false,
+          },
+        },
       },
       select: userSelect,
     })
@@ -503,7 +513,7 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
       resShort(res, 400, false, 'Enter the first name or the last name')
     }
 
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { id: req.userId },
       data: {
         first_name,
@@ -511,7 +521,7 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
       },
     })
 
-    resShort(res, 200, true, 'User updated successfully')
+    res.status(200).json({ ok: true, user })
     return
   } catch (error) {
     catchError(error, res)
