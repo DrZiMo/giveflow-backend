@@ -13,6 +13,7 @@ export const userSelect = {
   is_phone_number_verified: true,
   saveForLater: true,
   notification: true,
+  user_settings: true,
   created_at: true,
   updated_at: true,
 }

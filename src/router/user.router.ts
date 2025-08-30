@@ -20,7 +20,8 @@ import {
   sendCodePhoneNumber,
   signUp,
   toggleAnonymousUser,
-  toggleVerification,
+  toggleHistoryVisibility,
+  toggleProfileVisibility,
   updateUser,
   updateUserAdmin,
   verifyEmail,
@@ -49,12 +50,6 @@ router.get(
   authenticate,
   authorize([ROLE.ADMIN]),
   restoreDeletedUser
-)
-router.post(
-  '/verify',
-  authenticate,
-  authorize([ROLE.ADMIN]),
-  toggleVerification
 )
 router.put(
   '/update-user-admin',
@@ -88,5 +83,7 @@ router.get('/logout', authenticate, logout)
 router.put('/update-user', authenticate, updateUser)
 router.delete('/delete-current/:id', authenticate, deleteUserPerByUser)
 router.get('/refresh-token', refreshToken)
+router.get('/toggle-profile-visibility', authenticate, toggleProfileVisibility)
+router.get('/toggle-history-visibility', authenticate, toggleHistoryVisibility)
 
 export default router

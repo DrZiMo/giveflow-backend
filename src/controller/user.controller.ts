@@ -150,7 +150,6 @@ export const signUp = async (req: Request, res: Response) => {
         role: ROLE.USER,
         is_anonymous: false,
         is_deleted: false,
-        is_verified: false,
       },
       select: userSelect,
     })
@@ -615,47 +614,6 @@ export const changeRole = async (req: Request, res: Response) => {
   }
 }
 
-// verify user by the admin
-export const toggleVerification = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.body
-
-    if (!id) {
-      resShort(res, 400, false, 'You must provide ID')
-      return
-    }
-
-    const user = await prisma.user.findFirst({
-      where: {
-        id,
-      },
-    })
-
-    if (!user) {
-      resShort(res, 404, false, 'User not found')
-      return
-    }
-
-    await prisma.user.update({
-      where: {
-        id,
-      },
-      data: {
-        is_verified: !user.is_verified,
-      },
-    })
-
-    resShort(
-      res,
-      200,
-      true,
-      `User verification changed to: ${!user.is_verified}`
-    )
-  } catch (error) {
-    catchError(error, res)
-  }
-}
-
 // make the user anonymous
 export const toggleAnonymousUser = async (req: AuthRequest, res: Response) => {
   try {
@@ -1030,6 +988,82 @@ export const refreshToken = async (req: Request, res: Response) => {
     })
 
     resShort(res, 201, true, 'Access token created successfully')
+  } catch (error) {
+    catchError(error, res)
+  }
+}
+
+// toggle user profile public
+export const toggleProfileVisibility = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const userId = req.userId
+
+    if (!userId) {
+      resShort(res, 400, false, 'User not found')
+      return
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!user) {
+      resShort(res, 404, false, 'User not found')
+      return
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { is_public: !user.is_public },
+    })
+
+    resShort(
+      res,
+      200,
+      true,
+      `User profile visibility changed to: ${!user.is_public}`
+    )
+  } catch (error) {
+    catchError(error, res)
+  }
+}
+
+// toggle user history visibility
+export const toggleHistoryVisibility = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const userId = req.userId
+
+    if (!userId) {
+      resShort(res, 400, false, 'User not found')
+      return
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!user) {
+      resShort(res, 404, false, 'User not found')
+      return
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { is_history_visible: !user.is_history_visible },
+    })
+
+    resShort(
+      res,
+      200,
+      true,
+      `User history visibility changed to: ${!user.is_history_visible}`
+    )
   } catch (error) {
     catchError(error, res)
   }

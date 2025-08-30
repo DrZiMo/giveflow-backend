@@ -9,6 +9,7 @@ import notificationRouter from './router/notification.router'
 import donationRouter from './router/donation.router'
 import morgan from 'morgan'
 import cors from 'cors'
+import settingsRouter from './router/settings.router'
 
 const app = express()
 dotenv.config()
@@ -33,6 +34,7 @@ app.use('/api/categories', categoryRouter)
 app.use('/api/saves', saveRouter)
 app.use('/api/notifications', notificationRouter)
 app.use('/api/donations', donationRouter)
+app.use('/api/settings', settingsRouter)
 
 const PORT = process.env.PORT || 3002
 

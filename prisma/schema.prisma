@@ -35,7 +35,8 @@ model user {
   profile_pic_public_id    String              @default("")
   role                     ROLE
   is_anonymous             Boolean             @default(false)
-  is_verified              Boolean             @default(false)
+  is_public                Boolean             @default(true)
+  is_history_visible       Boolean             @default(true)
   is_deleted               Boolean             @default(false)
   is_email_verified        Boolean             @default(false)
   is_phone_number_verified Boolean             @default(false)
@@ -47,6 +48,7 @@ model user {
   like                     like[]
   saveForLater             save_for_later[]
   verification_code        verification_code[]
+  user_settings            user_settings[]
 }
 
 model cause {
@@ -149,6 +151,21 @@ model verification_code {
   expiry     DateTime
   verified   Boolean  @default(false)
   created_at DateTime @default(now())
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model user_settings {
+  id                  String   @id @default(uuid())
+  user_id             Int
+  email_notifications Boolean  @default(false)
+  sms_notifications   Boolean  @default(false)
+  push_notifications  Boolean  @default(false)
+  news_letter         Boolean  @default(false)
+  donation_receipts   Boolean  @default(false)
+  donation_reminds    Boolean  @default(false)
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt
 
   user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
