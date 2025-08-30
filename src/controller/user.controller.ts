@@ -1083,3 +1083,52 @@ export const toggleHistoryVisibility = async (
     catchError(error, res)
   }
 }
+
+// change password
+export const changePassword = async (req: AuthRequest, res: Response) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      resShort(res, 400, false, 'Fill all the inputs')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      resShort(
+        res,
+        400,
+        false,
+        'New password and confirm password do not match'
+      )
+      return
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId! },
+    })
+
+    if (!user) {
+      resShort(res, 404, false, 'User not found')
+      return
+    }
+
+    const isMatch = await argon2.verify(user.password, currentPassword)
+
+    if (!isMatch) {
+      resShort(res, 400, false, 'Old password is incorrect')
+      return
+    }
+
+    const newPasswordHasshed = await argon2.hash(newPassword)
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: newPasswordHasshed },
+    })
+
+    resShort(res, 200, true, 'Password successfully changed')
+  } catch (error) {
+    catchError(error, res)
+  }
+}

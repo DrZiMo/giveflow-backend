@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   addPhoneNumber,
+  changePassword,
   changeProfilePic,
   changeRole,
   deleteUserPerByAdmin,
@@ -85,5 +86,6 @@ router.delete('/delete-current/:id', authenticate, deleteUserPerByUser)
 router.get('/refresh-token', refreshToken)
 router.get('/toggle-profile-visibility', authenticate, toggleProfileVisibility)
 router.get('/toggle-history-visibility', authenticate, toggleHistoryVisibility)
+router.put('/change-password', authenticate, changePassword)
 
 export default router
