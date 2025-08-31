@@ -17,6 +17,13 @@ export const getSaveLater = async (req: AuthRequest, res: Response) => {
 
     const savedCauses = await prisma.save_for_later.findMany({
       where: { user_id: req.userId },
+      include: {
+        cause: {
+          include: {
+            category: true,
+          },
+        },
+      },
     })
 
     if (!savedCauses.length) {
@@ -59,6 +66,9 @@ export const toggleSaveCause = async (req: AuthRequest, res: Response) => {
 
     const isCauseSaved = await prisma.save_for_later.findFirst({
       where: { user_id: req.userId, cause_id },
+      include: {
+        cause: true,
+      },
     })
 
     if (isCauseSaved) {
@@ -132,6 +142,13 @@ export const userSavesAdmin = async (req: Request, res: Response) => {
 
     const userSaves = await prisma.save_for_later.findMany({
       where: { user_id: userId },
+      include: {
+        cause: {
+          include: {
+            category: true,
+          },
+        },
+      },
     })
 
     if (!userSaves.length) {
@@ -141,7 +158,7 @@ export const userSavesAdmin = async (req: Request, res: Response) => {
 
     res.status(200).json({
       ok: true,
-      saves: userSaves,
+      savedCauses: userSaves,
     })
   } catch (error) {
     catchError(error, res)
