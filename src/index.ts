@@ -18,12 +18,20 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
 
-app.use(express.json())
+// Parse JSON normally for all routes **except webhook**
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/donations/webhook') {
+    next() // skip json parser for webhook
+  } else {
+    express.json()(req, res, next)
+  }
+})
+
 app.use(cookieParser())
 
 app.use(
   cors({
-    origin: ['http://localhost:3000'],
+    origin: [process.env.FRONTEND_URL!],
     credentials: true,
   })
 )

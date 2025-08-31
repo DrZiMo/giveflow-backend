@@ -639,3 +639,23 @@ export const toggleFeatured = async (req: Request, res: Response) => {
     catchError(error, res)
   }
 }
+
+// get the number of donors for each cause
+export const getNumberOfDonors = async (req: Request, res: Response) => {
+  try {
+    const { causeId } = req.params
+    const donors = await prisma.donation.groupBy({
+      by: ['user_id'],
+      where: { cause_id: causeId },
+      _sum: { amount: true },
+    })
+
+    const donorsCount = donors.length
+    res.status(200).json({
+      ok: true,
+      donorsCount,
+    })
+  } catch (error) {
+    catchError(error, res)
+  }
+}

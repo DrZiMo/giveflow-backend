@@ -9,6 +9,7 @@ import {
   getAllCauses,
   getDeletedCauses,
   getFeaturedCauses,
+  getNumberOfDonors,
   getRelatedCauses,
   getSingleCause,
   getTrendingCauses,
@@ -55,5 +56,6 @@ router.post(
   authorize([ROLE.ADMIN]),
   toggleFeatured
 )
+router.get('/donors/:causeId', authenticate, getNumberOfDonors)
 
 export default router
