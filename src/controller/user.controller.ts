@@ -248,10 +248,10 @@ export const changeProfilePic = async (req: AuthRequest, res: Response) => {
       return
     }
 
-    // if (!req.file || !req.file.path) {
-    //   resShort(res, 400, false, 'No Image provided')
-    //   return
-    // }
+    if (!req.file || !req.file.path) {
+      resShort(res, 400, false, 'No Image provided')
+      return
+    }
 
     const user = await prisma.user.findFirst({
       where: {
@@ -264,20 +264,19 @@ export const changeProfilePic = async (req: AuthRequest, res: Response) => {
       return
     }
 
-    // const cloudinaryUploader = await cloudinary.uploader.upload(req.file.path, {
-    //   folder: 'profile_pics',
-    // })
-    // const result = {
-    //   path: cloudinaryUploader.secure_url,
-    //   public_id: cloudinaryUploader.public_id,
-    // }
+    const cloudinaryUploader = await cloudinary.uploader.upload(req.file.path, {
+      folder: 'profile_pics',
+    })
+    const result = {
+      path: cloudinaryUploader.secure_url,
+      public_id: cloudinaryUploader.public_id,
+    }
 
     await prisma.user.update({
       where: { id: req.userId },
       data: {
-        // profile_pic: result.path,
-        // profile_pic_public_id: result.public_id,
-        profile_pic,
+        profile_pic: result.path,
+        profile_pic_public_id: result.public_id,
       },
     })
 

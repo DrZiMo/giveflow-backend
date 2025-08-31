@@ -71,8 +71,13 @@ router.post('/change-role', authenticate, authorize([ROLE.ADMIN]), changeRole)
 router.post('/signup', signUp)
 router.post('/login', login)
 router.post('/phone-number', authenticate, addPhoneNumber)
-// router.get('/profile-picture', authenticate, upload.single('profilePic'), changeProfilePic)
-router.get('/profile-picture', authenticate, changeProfilePic)
+router.post(
+  '/profile-picture',
+  authenticate,
+  upload.single('profilePic'),
+  changeProfilePic
+)
+// router.get('/profile-picture', authenticate, changeProfilePic)
 router.get('/remove-profile-picture', authenticate, removeProfilePic)
 router.post('/anonymous', authenticate, toggleAnonymousUser)
 router.post('/send-code-email', authenticate, sendCodeEmail)
