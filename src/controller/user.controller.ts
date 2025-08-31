@@ -1166,3 +1166,32 @@ export const updatePrivacySettings = async (
     catchError(error, res)
   }
 }
+
+// get the donation history for each user
+export const getDonationHistory = async (req: AuthRequest, res: Response) => {
+  try {
+    const donationHistory = await prisma.donation.findMany({
+      where: {
+        user_id: req.userId,
+      },
+      include: {
+        cause: true,
+      },
+      orderBy: {
+        donated_at: 'desc',
+      },
+    })
+
+    if (!donationHistory.length) {
+      resShort(res, 404, false, 'No donation history found')
+      return
+    }
+
+    res.status(200).json({
+      ok: true,
+      history: donationHistory,
+    })
+  } catch (error) {
+    catchError(error, res)
+  }
+}

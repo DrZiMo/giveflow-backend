@@ -155,6 +155,7 @@ export const getDonorsByCause = async (req: Request, res: Response) => {
           amount: 'desc',
         },
       },
+      take: 10,
     })
 
     // fetch donor details

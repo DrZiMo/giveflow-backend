@@ -9,6 +9,7 @@ import {
   deleteUserTemp,
   getAllUsers,
   getDeletedUsers,
+  getDonationHistory,
   getSingleUser,
   getUsers,
   login,
@@ -89,5 +90,6 @@ router.get('/toggle-profile-visibility', authenticate, toggleProfileVisibility)
 router.get('/toggle-history-visibility', authenticate, toggleHistoryVisibility)
 router.put('/change-password', authenticate, changePassword)
 router.put('/update-privacy-settings', authenticate, updatePrivacySettings)
+router.get('/donation-history', authenticate, getDonationHistory)
 
 export default router

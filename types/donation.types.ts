@@ -1,4 +1,4 @@
 export interface ICreateDonation {
-    cause_id: string
-    amount: number
+  cause_id: string
+  amount: number
 }
