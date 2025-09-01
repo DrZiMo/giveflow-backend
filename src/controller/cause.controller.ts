@@ -659,3 +659,52 @@ export const getNumberOfDonors = async (req: Request, res: Response) => {
     catchError(error, res)
   }
 }
+
+// like a cause
+export const toggleLikeCause = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId
+
+    if (!userId) {
+      resShort(res, 400, false, 'No user ID provided')
+      return
+    }
+
+    const { causeId } = req.params
+
+    if (!causeId) {
+      resShort(res, 400, false, 'No cause ID provided')
+      return
+    }
+
+    const existing = await prisma.like.findUnique({
+      where: { user_id_cause_id: { user_id: userId, cause_id: causeId } },
+    })
+
+    if (existing) {
+      await prisma.like.delete({
+        where: { user_id_cause_id: { user_id: userId, cause_id: causeId } },
+      })
+
+      res.status(200).json({
+        ok: true,
+        message: 'Cause liked successfully',
+      })
+
+      return
+    } else {
+      await prisma.like.create({
+        data: { user_id: userId, cause_id: causeId },
+      })
+
+      res.status(200).json({
+        ok: true,
+        message: 'Cause disliked successfully',
+      })
+
+      return
+    }
+  } catch (error) {
+    catchError(error, res)
+  }
+}

@@ -16,6 +16,7 @@ import {
   restoreCause,
   searchCause,
   toggleFeatured,
+  toggleLikeCause,
   updateCause,
 } from '../controller/cause.controller'
 import { authenticate } from '../../middleware/authenticate'
@@ -57,5 +58,6 @@ router.post(
   toggleFeatured
 )
 router.get('/donors/:causeId', getNumberOfDonors)
+router.post('/like/:causeId', authenticate, toggleLikeCause)
 
 export default router

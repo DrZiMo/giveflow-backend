@@ -131,6 +131,8 @@ model like {
 
   user  user  @relation(fields: [user_id], references: [id], onDelete: Cascade)
   cause cause @relation(fields: [cause_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, cause_id])
 }
 
 model save_for_later {
