@@ -168,8 +168,8 @@ export const signUp = async (req: Request, res: Response) => {
       throw new Error('Error while creating new user')
     }
 
-    const { accessToken } = generateToken(newUser.id, res)
-    res.status(200).json({ ok: true, user: newUser, token: accessToken })
+    const tokens = generateToken(newUser.id, res)
+    res.status(200).json({ ok: true, user: newUser })
   } catch (error) {
     catchError(error, res)
   }
@@ -786,12 +786,15 @@ export const verifyEmail = async (req: AuthRequest, res: Response) => {
       data: { verified: true },
     })
 
-    await prisma.user.update({
+    const verifiedUser = await prisma.user.update({
       where: { id: user.id },
       data: { is_email_verified: true },
     })
 
-    resShort(res, 200, true, 'Email is verified')
+    res.status(200).json({
+      ok: true,
+      user: verifiedUser,
+    })
   } catch (error) {
     catchError(error, res)
   }

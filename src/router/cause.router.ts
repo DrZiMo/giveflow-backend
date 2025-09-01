@@ -56,6 +56,6 @@ router.post(
   authorize([ROLE.ADMIN]),
   toggleFeatured
 )
-router.get('/donors/:causeId', authenticate, getNumberOfDonors)
+router.get('/donors/:causeId', getNumberOfDonors)
 
 export default router
