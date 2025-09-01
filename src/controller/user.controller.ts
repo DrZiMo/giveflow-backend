@@ -926,17 +926,23 @@ export const verifyResetCode = async (req: Request, res: Response) => {
 }
 
 // reset password
-export const resetPassword = async (req: Request, res: Response) => {
+export const resetPassword = async (req: AuthRequest, res: Response) => {
   try {
-    const { email, phone_number, newPassword } = req.body
+    const userId = req.userId
+    const { newPassword, confirmPassword } = req.body
 
-    if ((!email && !phone_number) || newPassword) {
+    if (!newPassword || !confirmPassword) {
       resShort(res, 400, false, 'Fill all the inputs')
       return
     }
 
+    if (newPassword !== confirmPassword) {
+      resShort(res, 400, false, 'Passwords must match')
+      return
+    }
+
     const user = await prisma.user.findFirst({
-      where: email ? { email } : { phone_number },
+      where: { id: userId },
     })
 
     if (!user) {
