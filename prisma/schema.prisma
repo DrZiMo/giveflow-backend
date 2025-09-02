@@ -41,6 +41,7 @@ model user {
   is_email_verified            Boolean             @default(false)
   is_phone_number_verified     Boolean             @default(false)
   is_two_factor_authentication Boolean             @default(false)
+  is_logged_in                 Boolean             @default(false)
   created_at                   DateTime            @default(now())
   updated_at                   DateTime            @updatedAt
   cause                        cause[]

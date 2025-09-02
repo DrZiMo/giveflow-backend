@@ -31,6 +31,7 @@ import {
   verifyEmail,
   verifyPhoneNumber,
   verifyResetCode,
+  verifyTwoFactorAuthentication,
   whoami,
 } from '../controller/user.controller'
 import { authenticate } from '../../middleware/authenticate'
@@ -98,5 +99,6 @@ router.put('/change-password', authenticate, changePassword)
 router.put('/update-privacy-settings', authenticate, updatePrivacySettings)
 router.get('/donation-history', authenticate, getDonationHistory)
 router.post('/two-factor', authenticate, toggleTwoFactorAuthentication)
+router.post('/verify-2fa', authenticate, verifyTwoFactorAuthentication)
 
 export default router

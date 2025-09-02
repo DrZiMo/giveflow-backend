@@ -333,6 +333,27 @@ export const removeProfilePic = async (req: AuthRequest, res: Response) => {
 // logout
 export const logout = async (req: AuthRequest, res: Response) => {
   try {
+    if (!req.userId) {
+      resShort(res, 400, false, 'No user ID provided')
+      return
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+    })
+
+    if (!user) {
+      resShort(res, 404, false, 'User not found')
+      return
+    }
+
+    await prisma.user.update({
+      where: { id: req.userId },
+      data: {
+        is_logged_in: false,
+      },
+    })
+
     const token = req.cookies.access_token
 
     if (!token) {
@@ -1247,6 +1268,70 @@ export const toggleTwoFactorAuthentication = async (
       resShort(res, 200, true, 'Two factor authentication enabled')
       return
     }
+  } catch (error) {
+    catchError(error, res)
+  }
+}
+
+// very two factor authentication
+export const verifyTwoFactorAuthentication = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const user = await prisma.user.findFirst({
+      where: { id: req.userId },
+    })
+
+    if (!user) {
+      resShort(res, 404, false, 'User not found')
+      return
+    }
+
+    const { code } = req.body
+
+    if (!code) {
+      resShort(res, 400, false, 'Enter the code')
+      return
+    }
+
+    const confirmCode = await prisma.verification_code.findFirst({
+      where: { user_id: user.id },
+      orderBy: { created_at: 'desc' },
+    })
+
+    if (!confirmCode) {
+      resShort(res, 404, false, 'No verification code registered')
+      return
+    }
+
+    if (confirmCode.expiry.getTime() < Date.now()) {
+      await prisma.verification_code.delete({
+        where: { id: confirmCode.id },
+      })
+      resShort(res, 400, false, 'Verification code expired')
+      return
+    }
+
+    if (confirmCode.code !== code) {
+      resShort(res, 400, false, 'Incorrect verification code')
+      return
+    }
+
+    await prisma.verification_code.update({
+      where: { id: confirmCode.id },
+      data: { verified: true },
+    })
+
+    const verifiedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: { is_logged_in: true },
+    })
+
+    res.status(200).json({
+      ok: true,
+      user: verifiedUser,
+    })
   } catch (error) {
     catchError(error, res)
   }

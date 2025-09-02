@@ -12,6 +12,7 @@ export const userSelect = {
   is_deleted: true,
   is_email_verified: true,
   is_phone_number_verified: true,
+  is_two_factor_authentication: true,
   saveForLater: true,
   notification: true,
   user_settings: true,
