@@ -1203,3 +1203,51 @@ export const getDonationHistory = async (req: AuthRequest, res: Response) => {
     catchError(error, res)
   }
 }
+
+// enable / disable two factor authentication
+export const toggleTwoFactorAuthentication = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const userId = req.userId
+
+    if (!userId) {
+      resShort(res, 400, false, 'No userId provided')
+      return
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (!user) {
+      resShort(res, 400, false, 'User not found')
+      return
+    }
+
+    if (user.is_two_factor_authentication) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          is_two_factor_authentication: false,
+        },
+      })
+
+      resShort(res, 200, true, 'Two factor authentication disabled')
+      return
+    } else if (!user.is_two_factor_authentication) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          is_two_factor_authentication: true,
+        },
+      })
+
+      resShort(res, 200, true, 'Two factor authentication enabled')
+      return
+    }
+  } catch (error) {
+    catchError(error, res)
+  }
+}

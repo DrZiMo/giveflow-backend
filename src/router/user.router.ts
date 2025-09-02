@@ -24,6 +24,7 @@ import {
   toggleAnonymousUser,
   toggleHistoryVisibility,
   toggleProfileVisibility,
+  toggleTwoFactorAuthentication,
   updatePrivacySettings,
   updateUser,
   updateUserAdmin,
@@ -96,5 +97,6 @@ router.get('/toggle-history-visibility', authenticate, toggleHistoryVisibility)
 router.put('/change-password', authenticate, changePassword)
 router.put('/update-privacy-settings', authenticate, updatePrivacySettings)
 router.get('/donation-history', authenticate, getDonationHistory)
+router.post('/two-factor', authenticate, toggleTwoFactorAuthentication)
 
 export default router
