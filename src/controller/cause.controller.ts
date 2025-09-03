@@ -14,21 +14,96 @@ import { AuthRequest } from '../../types/request.types'
 
 const prisma = new PrismaClient()
 
-// get all the causes
+// get all causes with the search, filter and cause
 export const getAllCauses = async (req: Request, res: Response) => {
   try {
+    const { search, category, sort } = req.query as {
+      search?: string
+      category?: string
+      sort?: string
+    }
+
+    const whereClause: any = {}
+
+    if (search) {
+      whereClause.name = {
+        contains: search,
+        mode: 'insensitive',
+      }
+    }
+
+    if (category && category !== 'All') {
+      whereClause.category = { name: category }
+    }
+
     const causes = await prisma.cause.findMany({
-      include: causeInclude,
+      where: whereClause,
+      include: {
+        ...causeInclude,
+        _count: { select: { like: true } },
+        donation: true,
+      },
     })
 
     if (!causes.length) {
-      resShort(res, 404, false, 'No causes found')
-      return
+      return resShort(res, 404, false, 'No causes found')
+    }
+
+    // JS sorting for special cases
+    let sortedCauses = [...causes]
+
+    switch (sort) {
+      case 'Most Liked':
+        sortedCauses.sort((a, b) => (b._count.like || 0) - (a._count.like || 0))
+        break
+      case 'Most Funded':
+        sortedCauses.sort(
+          (a, b) =>
+            (b.donation.reduce((sum, d) => sum + d.amount, 0) || 0) -
+            (a.donation.reduce((sum, d) => sum + d.amount, 0) || 0)
+        )
+        break
+      case 'Nearly Funded':
+        sortedCauses.sort(
+          (a, b) =>
+            (a.amount_needed -
+              a.donation.reduce((sum, d) => sum + d.amount, 0) || 0) -
+            (b.amount_needed -
+              b.donation.reduce((sum, d) => sum + d.amount, 0) || 0)
+        )
+        break
+      case 'Newest Causes':
+        sortedCauses.sort(
+          (a, b) => b.created_at.getTime() - a.created_at.getTime()
+        )
+        break
+      case 'Oldest Causes':
+        sortedCauses.sort(
+          (a, b) => a.created_at.getTime() - b.created_at.getTime()
+        )
+        break
+      case 'Highest Amount Needed':
+        sortedCauses.sort((a, b) => b.amount_needed - a.amount_needed)
+        break
+      case 'Least Funded':
+        sortedCauses.sort(
+          (a, b) =>
+            (a.donation.reduce((sum, d) => sum + d.amount, 0) || 0) -
+            (b.donation.reduce((sum, d) => sum + d.amount, 0) || 0)
+        )
+        break
+      case 'Urgency Level':
+        sortedCauses.sort(
+          (a, b) => Number(b.urgency_level) - Number(a.urgency_level)
+        )
+        break
+      default:
+        break
     }
 
     res.status(200).json({
-      ok: false,
-      causes,
+      ok: true,
+      causes: sortedCauses,
     })
   } catch (error) {
     catchError(error, res)
