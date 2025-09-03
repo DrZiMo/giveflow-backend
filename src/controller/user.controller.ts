@@ -1199,9 +1199,43 @@ export const updatePrivacySettings = async (
 // get the donation history for each user
 export const getDonationHistory = async (req: AuthRequest, res: Response) => {
   try {
+    const { search, time } = req.query
+
+    // Handle time filter
+    let dateFilter: Date | undefined
+    const now = new Date()
+
+    switch (time) {
+      case '24h':
+        dateFilter = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+        break
+      case 'week':
+        dateFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+        break
+      case 'month':
+        dateFilter = new Date(now.setMonth(now.getMonth() - 1))
+        break
+      case 'year':
+        dateFilter = new Date(now.setFullYear(now.getFullYear() - 1))
+        break
+    }
+
     const donationHistory = await prisma.donation.findMany({
       where: {
         user_id: req.userId,
+        ...(search && {
+          cause: {
+            name: {
+              contains: search as string,
+              mode: 'insensitive',
+            },
+          },
+        }),
+        ...(dateFilter && {
+          donated_at: {
+            gte: dateFilter,
+          },
+        }),
       },
       include: {
         cause: true,
