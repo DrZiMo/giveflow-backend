@@ -892,15 +892,15 @@ export const verifyPhoneNumber = async (req: AuthRequest, res: Response) => {
 // verify reset code
 export const verifyResetCode = async (req: Request, res: Response) => {
   try {
-    const { email, phone_number, code } = req.body
+    const { email, code } = req.body
 
-    if ((!email && !phone_number) || !code) {
+    if (!email || !code) {
       resShort(res, 400, false, 'Fill all inputs')
       return
     }
 
     const user = await prisma.user.findFirst({
-      where: email ? { email } : { phone_number },
+      where: { email },
     })
 
     if (!user) {
