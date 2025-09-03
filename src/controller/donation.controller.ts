@@ -181,3 +181,115 @@ export const getDonorsByCause = async (req: Request, res: Response) => {
     catchError(error, res)
   }
 }
+
+// get the summary of the donation
+export const getDonationSummary = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId
+
+    const donations = await prisma.donation.findMany({
+      where: { user_id: userId },
+      select: { amount: true, cause_id: true },
+    })
+
+    if (!donations.length) {
+      res.status(200).json({
+        ok: true,
+        totalDonated: 0,
+        causesSupported: 0,
+        averageDonation: 0,
+        highestDonation: 0,
+      })
+      return
+    }
+
+    const totalDonated = donations.reduce((acc, d) => acc + d.amount, 0)
+    const causesSupported = new Set(donations.map((d) => d.cause_id)).size
+    const averageDonation = totalDonated / donations.length
+    const highestDonation = Math.max(...donations.map((d) => d.amount))
+
+    res.status(200).json({
+      ok: true,
+      totalDonated,
+      causesSupported,
+      averageDonation,
+      highestDonation,
+    })
+    return
+  } catch (error) {
+    catchError(error, res)
+  }
+}
+
+// get monthly donation
+export const getMonthlyDonations = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId
+
+    const donations = await prisma.donation.findMany({
+      where: { user_id: userId },
+      select: { amount: true, donated_at: true },
+    })
+
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ]
+
+    const monthlyTotals = months.map((month, idx) => {
+      const total = donations
+        .filter((d) => d.donated_at.getMonth() === idx)
+        .reduce((sum, d) => sum + d.amount, 0)
+      return { month, amount: total }
+    })
+
+    res.status(200).json({ ok: true, monthlyTotals })
+  } catch (error) {
+    catchError(error, res)
+  }
+}
+
+// get supported causes
+export const getTopSupportedCauses = async (
+  req: AuthRequest,
+  res: Response
+) => {
+  try {
+    const userId = req.userId
+
+    const topCauses = await prisma.donation.groupBy({
+      by: ['cause_id'],
+      _sum: { amount: true },
+      orderBy: { _sum: { amount: 'desc' } },
+      where: { user_id: userId },
+      take: 5,
+    })
+
+    const detailedCauses = await Promise.all(
+      topCauses.map(async (c) => {
+        const cause = await prisma.cause.findUnique({
+          where: { id: c.cause_id },
+          include: { category: true },
+        })
+        return {
+          cause: cause?.category?.name || 'Unknown',
+          amount: c._sum.amount || 0,
+        }
+      })
+    )
+
+    res.status(200).json({ ok: true, causes: detailedCauses })
+  } catch (error) {
+    catchError(error, res)
+  }
+}

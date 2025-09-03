@@ -4,7 +4,10 @@ import bodyParser from 'body-parser'
 import {
   createDonation,
   getAllDonations,
+  getDonationSummary,
   getDonorsByCause,
+  getMonthlyDonations,
+  getTopSupportedCauses,
   handleStripeWebhook,
 } from '../controller/donation.controller'
 import { authenticate } from '../../middleware/authenticate'
@@ -21,5 +24,7 @@ router.post(
   handleStripeWebhook
 )
 router.get('/top-donors/:causeId', getDonorsByCause)
-
+router.get('/summary', authenticate, getDonationSummary)
+router.get('/monthly', authenticate, getMonthlyDonations)
+router.get('/supported-causes', authenticate, getTopSupportedCauses)
 export default router
