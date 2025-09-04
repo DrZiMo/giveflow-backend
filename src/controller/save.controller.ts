@@ -76,6 +76,16 @@ export const toggleSaveCause = async (req: AuthRequest, res: Response) => {
         where: { id: isCauseSaved.id },
       })
 
+      await prisma.recent_activity.create({
+        data: {
+          user_id: req.userId,
+          cause_id: cause_id,
+          amount: '-',
+          name: `Unsaved ${cause?.name}`,
+          status: 'Unsave',
+        },
+      })
+
       resShort(res, 200, true, 'Cause removed from the save later')
       return
     } else {
@@ -83,6 +93,16 @@ export const toggleSaveCause = async (req: AuthRequest, res: Response) => {
         data: {
           user_id: req.userId,
           cause_id,
+        },
+      })
+
+      await prisma.recent_activity.create({
+        data: {
+          user_id: req.userId,
+          cause_id: cause_id,
+          amount: '-',
+          name: `Saved ${cause?.name}`,
+          status: 'Save',
         },
       })
 

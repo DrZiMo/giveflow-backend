@@ -51,6 +51,7 @@ model user {
   saveForLater                 save_for_later[]
   verification_code            verification_code[]
   user_settings                user_settings[]
+  recent_activity              recent_activity[]
 }
 
 model cause {
@@ -170,6 +171,19 @@ model user_settings {
   donation_reminds    Boolean  @default(false)
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
+
+  user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model recent_activity {
+  id         String   @id @default(uuid())
+  name       String
+  user_id    Int
+  cause_id   String
+  amount     String
+  status     String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
 
   user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }

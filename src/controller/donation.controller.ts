@@ -121,6 +121,18 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
           },
         },
       })
+
+      const cause = await prisma.cause.findUnique({ where: { id: cause_id } })
+
+      await prisma.recent_activity.create({
+        data: {
+          user_id: Number(donor_id),
+          cause_id: cause_id,
+          amount: String(amount),
+          name: `Donated to ${cause?.name}`,
+          status: 'Completed',
+        },
+      })
     }
 
     // Return 200 for all events to Stripe
