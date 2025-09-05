@@ -18,6 +18,9 @@ export const getUserActivities = async (req: AuthRequest, res: Response) => {
 
     const activities = await prisma.recent_activity.findMany({
       where: { user_id: userId },
+      orderBy: {
+        created_at: 'desc',
+      },
     })
 
     if (!activities.length) {

@@ -168,7 +168,7 @@ model user_settings {
   push_notifications  Boolean  @default(false)
   news_letter         Boolean  @default(false)
   donation_receipts   Boolean  @default(false)
-  donation_reminds    Boolean  @default(false)
+  donation_reminders  Boolean  @default(false)
   created_at          DateTime @default(now())
   updated_at          DateTime @updatedAt
 

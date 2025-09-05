@@ -157,7 +157,7 @@ export const signUp = async (req: Request, res: Response) => {
             push_notifications: false,
             news_letter: false,
             donation_receipts: false,
-            donation_reminds: false,
+            donation_reminders: false,
           },
         },
       },

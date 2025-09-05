@@ -27,7 +27,7 @@ export const createSetting = async (req: AuthRequest, res: Response) => {
     push_notifications,
     news_letter,
     donation_receipts,
-    donation_reminds,
+    donation_reminders,
   } = req.body
 
   try {
@@ -39,7 +39,7 @@ export const createSetting = async (req: AuthRequest, res: Response) => {
         push_notifications,
         news_letter,
         donation_receipts,
-        donation_reminds,
+        donation_reminders,
       },
     })
     res.status(201).json({ ok: true, setting })
@@ -56,7 +56,7 @@ export const updateSetting = async (req: AuthRequest, res: Response) => {
     push_notifications,
     news_letter,
     donation_receipts,
-    donation_reminds,
+    donation_reminders,
   } = req.body
 
   try {
@@ -68,7 +68,7 @@ export const updateSetting = async (req: AuthRequest, res: Response) => {
         push_notifications,
         news_letter,
         donation_receipts,
-        donation_reminds,
+        donation_reminders,
       },
     })
     res.status(200).json({ ok: true, setting })

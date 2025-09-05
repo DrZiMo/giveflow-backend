@@ -6,6 +6,7 @@ import { Request, Response } from 'express'
 import { ICreateDonation } from '../../types/donation.types'
 import { resShort } from '../../lib/response'
 import { userSelect } from '../../lib/select/user.select'
+import { sendEmailHtml } from '../../lib/send.email'
 
 const prisma = new PrismaClient()
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY! as string)
@@ -133,6 +134,21 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
           status: 'Completed',
         },
       })
+
+      const user = await prisma.user.findUnique({
+        where: { id: Number(donor_id) },
+        include: { user_settings: true },
+      })
+
+      const settings = user?.user_settings?.[0]
+
+      if (settings?.donation_receipts) {
+        await sendEmailHtml(
+          user!.email,
+          'Your Donation Receipt',
+          `<h1>Thank you for your donation!</h1><p>You donated <b>$${amount}</b> to <b>${cause?.name}</b></p>`
+        )
+      }
     }
 
     // Return 200 for all events to Stripe

@@ -12,6 +12,8 @@ import cors from 'cors'
 import settingsRouter from './router/settings.router'
 import likesRouter from './router/like.router'
 import activityRouter from './router/activity.router'
+import '../jobs/donationsReminder'
+import '../jobs/newsLetterReminders'
 
 const app = express()
 dotenv.config()
@@ -20,10 +22,9 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
 
-// Parse JSON normally for all routes **except webhook**
 app.use((req, res, next) => {
   if (req.originalUrl === '/api/donations/webhook') {
-    next() // skip json parser for webhook
+    next()
   } else {
     express.json()(req, res, next)
   }
