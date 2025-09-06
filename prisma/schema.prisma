@@ -13,8 +13,8 @@ enum ROLE {
 }
 
 enum CAUSE_STATUS {
-  VERIFIED
-  PENDING
+  ACTIVE
+  INACTIVE
   REJECTED
 }
 

@@ -1370,3 +1370,53 @@ export const verifyTwoFactorAuthentication = async (
     catchError(error, res)
   }
 }
+
+// get top donors
+export const getTopDonors = async (req: Request, res: Response) => {
+  try {
+    const topDonors = await prisma.donation.groupBy({
+      by: ['user_id'],
+      _sum: {
+        amount: true,
+      },
+      _count: {
+        cause_id: true, // counts donations, but not distinct causes
+      },
+      orderBy: {
+        _sum: {
+          amount: 'desc',
+        },
+      },
+      take: 5,
+    })
+
+    const donorsWithUser = await Promise.all(
+      topDonors.map(async (donor) => {
+        const user = await prisma.user.findUnique({
+          where: { id: donor.user_id },
+          select: userSelect,
+        })
+
+        // distinct cause count
+        const supportedCauses = await prisma.donation.findMany({
+          where: { user_id: donor.user_id },
+          select: { cause_id: true },
+          distinct: ['cause_id'],
+        })
+
+        return {
+          ...user,
+          totalDonated: donor._sum.amount ?? 0,
+          supportedCauses: supportedCauses.length,
+        }
+      })
+    )
+
+    res.status(200).json({
+      ok: true,
+      donors: donorsWithUser,
+    })
+  } catch (error) {
+    catchError(error, res)
+  }
+}

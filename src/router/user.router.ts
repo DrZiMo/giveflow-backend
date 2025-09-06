@@ -11,6 +11,7 @@ import {
   getDeletedUsers,
   getDonationHistory,
   getSingleUser,
+  getTopDonors,
   getUsers,
   login,
   logout,
@@ -56,6 +57,7 @@ router.get(
   authorize([ROLE.ADMIN]),
   restoreDeletedUser
 )
+router.get('/top-donors', authenticate, authorize([ROLE.ADMIN]), getTopDonors)
 router.put(
   '/update-user-admin',
   authenticate,

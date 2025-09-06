@@ -21,6 +21,7 @@ export const getUserActivities = async (req: AuthRequest, res: Response) => {
       orderBy: {
         created_at: 'desc',
       },
+      take: 5,
     })
 
     if (!activities.length) {

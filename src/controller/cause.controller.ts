@@ -384,7 +384,7 @@ export const addNewCause = async (req: AuthRequest, res: Response) => {
         cause_pic_public_id: result ? result.public_id : '',
         amount_needed,
         current_amount: 0,
-        status: CAUSE_STATUS.PENDING,
+        status: CAUSE_STATUS.INACTIVE,
         category_id,
         urgency_level,
         expiration_date,

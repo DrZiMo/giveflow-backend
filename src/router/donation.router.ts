@@ -4,11 +4,14 @@ import bodyParser from 'body-parser'
 import {
   createDonation,
   getAllDonations,
-  getDonationSummary,
+  getUserDonationSummary,
   getDonorsByCause,
+  getUserMonthlyDonations,
+  getUserTopSupportedCauses,
+  handleStripeWebhook,
+  getDonationSummary,
   getMonthlyDonations,
   getTopSupportedCauses,
-  handleStripeWebhook,
 } from '../controller/donation.controller'
 import { authenticate } from '../../middleware/authenticate'
 import { authorize } from '../../middleware/authorize'
@@ -24,7 +27,25 @@ router.post(
   handleStripeWebhook
 )
 router.get('/top-donors/:causeId', getDonorsByCause)
-router.get('/summary', authenticate, getDonationSummary)
-router.get('/monthly', authenticate, getMonthlyDonations)
-router.get('/supported-causes', authenticate, getTopSupportedCauses)
+router.get(
+  '/summary-admin',
+  authenticate,
+  authorize([ROLE.ADMIN]),
+  getDonationSummary
+)
+router.get(
+  '/monthly-admin',
+  authenticate,
+  authorize([ROLE.ADMIN]),
+  getMonthlyDonations
+)
+router.get(
+  '/supported-causes-admin',
+  authenticate,
+  authorize([ROLE.ADMIN]),
+  getTopSupportedCauses
+)
+router.get('/summary', authenticate, getUserDonationSummary)
+router.get('/monthly', authenticate, getUserMonthlyDonations)
+router.get('/supported-causes', authenticate, getUserTopSupportedCauses)
 export default router
