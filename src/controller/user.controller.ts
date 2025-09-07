@@ -19,12 +19,23 @@ import cloudinary from '../../utils/cloudinary'
 
 const prisma = new PrismaClient()
 
-// get all users with donation stats
+// get all users with pagination and donation stats
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await prisma.user.findMany({
-      select: userSelect,
-    })
+    // pagination params
+    const page = parseInt(req.query.page as string) || 1
+    const limit = parseInt(req.query.limit as string) || 10
+    const skip = (page - 1) * limit
+
+    // fetch users and count in parallel
+    const [users, totalUsers] = await Promise.all([
+      prisma.user.findMany({
+        skip,
+        take: limit,
+        select: userSelect,
+      }),
+      prisma.user.count(),
+    ])
 
     if (!users.length) {
       resShort(res, 404, false, 'Users not found')
@@ -53,9 +64,13 @@ export const getAllUsers = async (req: Request, res: Response) => {
     res.status(200).json({
       ok: true,
       users: usersWithStats,
-      number: usersWithStats.length,
+      number: totalUsers,
+      pagination: {
+        page,
+        limit,
+        totalPages: Math.ceil(totalUsers / limit),
+      },
     })
-    return
   } catch (error) {
     catchError(error, res)
   }
