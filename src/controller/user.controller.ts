@@ -19,7 +19,7 @@ import cloudinary from '../../utils/cloudinary'
 
 const prisma = new PrismaClient()
 
-// get all users
+// get all users with donation stats
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany({
@@ -31,7 +31,30 @@ export const getAllUsers = async (req: Request, res: Response) => {
       return
     }
 
-    res.status(200).json({ ok: true, users })
+    // attach donation stats to each user
+    const usersWithStats = await Promise.all(
+      users.map(async (user) => {
+        const donations = await prisma.donation.findMany({
+          where: { user_id: user.id },
+          select: { amount: true, cause_id: true },
+        })
+
+        const totalDonated = donations.reduce((acc, d) => acc + d.amount, 0)
+        const causesSupported = new Set(donations.map((d) => d.cause_id)).size
+
+        return {
+          ...user,
+          totalDonated,
+          causesSupported,
+        }
+      })
+    )
+
+    res.status(200).json({
+      ok: true,
+      users: usersWithStats,
+      number: usersWithStats.length,
+    })
     return
   } catch (error) {
     catchError(error, res)
