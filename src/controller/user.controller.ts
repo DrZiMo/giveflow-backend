@@ -240,6 +240,11 @@ export const login = async (req: Request, res: Response) => {
       return
     }
 
+    if (user.is_deleted) {
+      resShort(res, 400, false, 'Account suspended')
+      return
+    }
+
     const tokens = generateToken(user.id, res)
     res.status(200).json({ ok: true, user: safeUser })
   } catch (error) {
@@ -430,9 +435,9 @@ export const whoami = async (req: AuthRequest, res: Response) => {
 }
 
 // delete user temperorly
-export const deleteUserTemp = async (req: AuthRequest, res: Response) => {
+export const deleteUserTemp = async (req: Request, res: Response) => {
   try {
-    const id = req.userId
+    const id = Number(req.params.id)
 
     if (!id) {
       resShort(res, 400, false, 'You must provide ID')
@@ -494,7 +499,7 @@ export const getDeletedUsers = async (req: Request, res: Response) => {
 // restore user
 export const restoreDeletedUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.body
+    const id = Number(req.params.id)
 
     if (!id) {
       resShort(res, 400, false, 'You must provide ID')
@@ -1377,7 +1382,7 @@ export const verifyTwoFactorAuthentication = async (
       return
     }
 
-    if (confirmCode.expiry.getTime() < Date.now()) {
+    if (new Date(confirmCode.expiry).getTime() < Date.now()) {
       await prisma.verification_code.delete({
         where: { id: confirmCode.id },
       })

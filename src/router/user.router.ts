@@ -52,7 +52,7 @@ router.get(
   getDeletedUsers
 )
 router.get(
-  '/restore',
+  '/restore/:id',
   authenticate,
   authorize([ROLE.ADMIN]),
   restoreDeletedUser
@@ -70,7 +70,12 @@ router.delete(
   authorize([ROLE.ADMIN]),
   deleteUserPerByAdmin
 )
-router.get('/delete-temp', authenticate, deleteUserTemp)
+router.get(
+  '/delete-temp/:id',
+  authenticate,
+  authorize([ROLE.ADMIN]),
+  deleteUserTemp
+)
 router.post('/change-role', authenticate, authorize([ROLE.ADMIN]), changeRole)
 router.post('/signup', signUp)
 router.post('/login', login)
