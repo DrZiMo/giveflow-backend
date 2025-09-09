@@ -18,14 +18,14 @@ export const generateToken = (userId: number, res: Response) => {
     maxAge: 15 * 60 * 1000,
     httpOnly: true,
     sameSite: 'lax',
-    secure: false,
+    secure: process.env.NODE_ENV === 'production',
   })
 
   res.cookie('refresh_token', refreshToken, {
     maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
     sameSite: 'lax',
-    secure: false,
+    secure: process.env.NODE_ENV === 'production',
   })
 
   return { accessToken, refreshToken }

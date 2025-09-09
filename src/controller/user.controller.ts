@@ -206,7 +206,7 @@ export const signUp = async (req: Request, res: Response) => {
       throw new Error('Error while creating new user')
     }
 
-    const tokens = generateToken(newUser.id, res)
+    generateToken(newUser.id, res)
     res.status(200).json({ ok: true, user: newUser })
   } catch (error) {
     catchError(error, res)
@@ -561,7 +561,7 @@ export const updateUserAdmin = async (req: Request, res: Response) => {
   }
 }
 
-// update the user by the admin
+// update the user by the user him self
 export const updateUser = async (req: AuthRequest, res: Response) => {
   try {
     const { first_name, last_name }: { first_name: string; last_name: string } =
@@ -724,26 +724,21 @@ export const toggleAnonymousUser = async (req: AuthRequest, res: Response) => {
   }
 }
 
-// send code to email
+// sending code
 export const sendCodeEmail = async (req: AuthRequest, res: Response) => {
   try {
-    const user = await prisma.user.findFirst({
-      where: { id: req.userId },
-    })
-
-    if (!user) {
-      resShort(res, 404, false, 'User is not found')
+    if (!req.userId) {
+      resShort(res, 400, false, 'No userId provided')
       return
     }
 
-    const email = user.email
+    const user = await prisma.user.findUnique({ where: { id: req.userId } })
+
+    if (!user) return resShort(res, 404, false, 'User not found')
+    if (!user.email) return resShort(res, 400, false, 'User has no email')
+
     const code = generateCode()
-    const expiry = new Date(Date.now() + 2 * 60 * 1000)
-
-    if (!email) {
-      resShort(res, 400, false, 'Enter the email')
-      return
-    }
+    const expiry = new Date(Date.now() + 2 * 60 * 1000) // 2 min expiry
 
     await prisma.verification_code.create({
       data: {
@@ -753,9 +748,14 @@ export const sendCodeEmail = async (req: AuthRequest, res: Response) => {
       },
     })
 
-    sendEmail(email, 'GiveFlow verification code', code)
+    // ✅ Send email to logged-in user
+    await sendEmail(
+      user.email,
+      'GiveFlow Verification Code',
+      `Your code: ${code}`
+    )
 
-    resShort(res, 200, true, 'The verification code is sent successfully')
+    resShort(res, 200, true, 'Verification code sent successfully')
   } catch (error) {
     catchError(error, res)
   }

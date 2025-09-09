@@ -3,7 +3,7 @@ import { transporter } from '../utils/nodemailer'
 export const sendEmail = async (to: string, subject: string, text: string) => {
   try {
     await transporter.sendMail({
-      from: '',
+      from: '"GiveFlow" <zuhaybhamar@gmail.com>',
       to,
       subject,
       text,
@@ -20,7 +20,7 @@ export const sendEmailHtml = async (
 ) => {
   try {
     await transporter.sendMail({
-      from: '',
+      from: '"GiveFlow" <zuhaybhamar@gmail.com>',
       to,
       subject,
       html,
