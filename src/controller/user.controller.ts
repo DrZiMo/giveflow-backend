@@ -22,27 +22,28 @@ const prisma = new PrismaClient()
 // get all users with pagination and donation stats
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    // pagination params
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 10
     const skip = (page - 1) * limit
+    const status = (req.query.status as string) || 'all'
 
-    // fetch users and count in parallel
-    const [users, totalUsers] = await Promise.all([
+    let where: any = {}
+    if (status === 'active') where.is_deleted = false
+    if (status === 'suspend') where.is_deleted = true
+
+    const [users, totalUsers, activeCount, suspendCount] = await Promise.all([
       prisma.user.findMany({
         skip,
         take: limit,
+        where,
         select: userSelect,
       }),
-      prisma.user.count(),
+      prisma.user.count({ where }),
+      prisma.user.count({ where: { is_deleted: false } }),
+      prisma.user.count({ where: { is_deleted: true } }),
     ])
 
-    if (!users.length) {
-      resShort(res, 404, false, 'Users not found')
-      return
-    }
-
-    // attach donation stats to each user
+    // don’t return 404, return empty array + counts
     const usersWithStats = await Promise.all(
       users.map(async (user) => {
         const donations = await prisma.donation.findMany({
@@ -63,54 +64,16 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
     res.status(200).json({
       ok: true,
-      users: usersWithStats,
-      number: totalUsers,
+      users: usersWithStats, // [] if none
+      number: totalUsers || 0,
+      activeCount: activeCount || 0,
+      suspendCount: suspendCount || 0,
       pagination: {
         page,
         limit,
-        totalPages: Math.ceil(totalUsers / limit),
+        totalPages: totalUsers > 0 ? Math.ceil(totalUsers / limit) : 0,
       },
     })
-  } catch (error) {
-    catchError(error, res)
-  }
-}
-
-// get users by id, email, first name last name
-export const getUsers = async (req: Request, res: Response) => {
-  try {
-    const { id, email, phone_number, first_name, last_name }: ISearchUser =
-      req.body
-
-    if (!id && !email && phone_number && !first_name && !last_name) {
-      resShort(
-        res,
-        400,
-        false,
-        'You must provide ID, email, phone number, first name or last name'
-      )
-      return
-    }
-
-    const users = await prisma.user.findMany({
-      where: {
-        OR: [
-          id ? { id } : {},
-          email ? { email } : {},
-          phone_number ? { phone_number } : {},
-          first_name ? { first_name } : {},
-          last_name ? { last_name } : {},
-        ],
-      },
-      select: userSelect,
-    })
-
-    if (!users.length) {
-      resShort(res, 404, false, 'No users found')
-      return
-    }
-
-    res.status(200).json({ ok: true, users })
   } catch (error) {
     catchError(error, res)
   }
@@ -738,7 +701,7 @@ export const sendCodeEmail = async (req: AuthRequest, res: Response) => {
     if (!user.email) return resShort(res, 400, false, 'User has no email')
 
     const code = generateCode()
-    const expiry = new Date(Date.now() + 2 * 60 * 1000) // 2 min expiry
+    const expiry = new Date(Date.now() + 2 * 60 * 1000)
 
     await prisma.verification_code.create({
       data: {

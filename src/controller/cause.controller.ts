@@ -338,13 +338,7 @@ export const addNewCause = async (req: AuthRequest, res: Response) => {
       expiration_date,
     }: IAddNewCause = req.body
 
-    if (
-      !name ||
-      !amount_needed ||
-      !urgency_level ||
-      !category_id ||
-      !expiration_date
-    ) {
+    if (!name || !amount_needed || !urgency_level || !category_id) {
       resShort(res, 400, false, 'Fill all the inputs')
       return
     }
@@ -382,7 +376,7 @@ export const addNewCause = async (req: AuthRequest, res: Response) => {
         long_description: long_description ? long_description : '',
         cause_pic: result ? result.path : '',
         cause_pic_public_id: result ? result.public_id : '',
-        amount_needed,
+        amount_needed: Number(amount_needed),
         current_amount: 0,
         status: CAUSE_STATUS.INACTIVE,
         category_id,
@@ -393,7 +387,7 @@ export const addNewCause = async (req: AuthRequest, res: Response) => {
     })
 
     res.status(201).json({
-      ok: false,
+      ok: true,
       cause: newCause,
     })
   } catch (error) {
