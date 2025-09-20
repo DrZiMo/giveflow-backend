@@ -56,7 +56,7 @@ router.post(
   deleteCausePerm
 )
 router.post('/restore', authenticate, authorize([ROLE.ADMIN]), restoreCause)
-router.put('/update', authenticate, updateCause)
+router.put('/update', authenticate, authorize([ROLE.ADMIN]), updateCause)
 router.post(
   '/toggle-featured',
   authenticate,

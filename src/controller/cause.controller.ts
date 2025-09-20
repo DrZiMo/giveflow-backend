@@ -693,7 +693,7 @@ export const toggleFeatured = async (req: Request, res: Response) => {
         data: { is_featured: false },
       })
 
-      resShort(res, 200, true, 'Cause is featured successfully')
+      resShort(res, 200, true, 'Cause is unfeatured successfully')
       return
     } else {
       await prisma.cause.update({
@@ -701,7 +701,7 @@ export const toggleFeatured = async (req: Request, res: Response) => {
         data: { is_featured: true },
       })
 
-      resShort(res, 200, true, 'Cause is unfeatured successfully')
+      resShort(res, 200, true, 'Cause is featured successfully')
       return
     }
   } catch (error) {
