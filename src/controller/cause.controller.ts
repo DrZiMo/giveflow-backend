@@ -777,3 +777,47 @@ export const toggleLikeCause = async (req: AuthRequest, res: Response) => {
     catchError(error, res)
   }
 }
+
+// toggle activeness of the cause
+export const toggleActiveCause = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.body
+
+    if (!id) {
+      resShort(res, 400, false, 'No cause id provided')
+      return
+    }
+
+    const cause = await prisma.cause.findUnique({
+      where: { id },
+    })
+
+    if (!cause) {
+      resShort(res, 400, false, 'Cause not found')
+      return
+    }
+
+    if (cause.status === CAUSE_STATUS.ACTIVE) {
+      await prisma.cause.update({
+        where: { id },
+        data: {
+          status: CAUSE_STATUS.INACTIVE,
+        },
+      })
+
+      resShort(res, 200, true, 'Cause deactived successfully')
+      return
+    } else {
+      await prisma.cause.update({
+        where: { id },
+        data: {
+          status: CAUSE_STATUS.ACTIVE,
+        },
+      })
+      resShort(res, 200, true, 'Cause activated successfully')
+      return
+    }
+  } catch (error) {
+    catchError(error, res)
+  }
+}

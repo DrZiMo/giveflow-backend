@@ -15,6 +15,7 @@ import {
   getTrendingCauses,
   restoreCause,
   searchCause,
+  toggleActiveCause,
   toggleFeatured,
   toggleLikeCause,
   updateCause,
@@ -42,7 +43,12 @@ router.post('/category', causeByCategory)
 router.post('/urgency-level', causeByUrgencyLevel)
 router.post('/new', authenticate, upload.single('causePic'), addNewCause)
 router.post('/cause-pic', authenticate, upload.single('causePic'), causePicture)
-router.post('/delete-temp', authenticate, deleteCauseTemp)
+router.post(
+  '/delete-temp',
+  authenticate,
+  authorize([ROLE.ADMIN]),
+  deleteCauseTemp
+)
 router.post(
   '/delete-perm',
   authenticate,
@@ -56,6 +62,12 @@ router.post(
   authenticate,
   authorize([ROLE.ADMIN]),
   toggleFeatured
+)
+router.post(
+  '/toggle-active',
+  authenticate,
+  authorize([ROLE.ADMIN]),
+  toggleActiveCause
 )
 router.get('/donors/:causeId', getNumberOfDonors)
 router.post('/like/:causeId', authenticate, toggleLikeCause)
