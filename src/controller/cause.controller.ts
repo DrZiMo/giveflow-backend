@@ -757,7 +757,7 @@ export const toggleLikeCause = async (req: AuthRequest, res: Response) => {
 
       res.status(200).json({
         ok: true,
-        message: 'Cause liked successfully',
+        message: 'Cause disliked successfully',
       })
 
       return
@@ -768,7 +768,7 @@ export const toggleLikeCause = async (req: AuthRequest, res: Response) => {
 
       res.status(200).json({
         ok: true,
-        message: 'Cause disliked successfully',
+        message: 'Cause liked successfully',
       })
 
       return

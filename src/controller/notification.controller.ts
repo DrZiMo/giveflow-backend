@@ -4,208 +4,102 @@ import { AuthRequest } from '../../types/request.types'
 import { catchError } from '../../lib/catch.error'
 import { resShort } from '../../lib/response'
 import { ISendNotification } from '../../types/notification.types'
+import { sendEmailHtml } from '../../lib/send.email'
 
 const prisma = new PrismaClient()
 
 // get all notifications of one user
 export const getAllNotification = async (req: AuthRequest, res: Response) => {
-    try {
-        if (!req.userId) {
-            resShort(res, 400, false, 'No user ID provided')
-            return
-        }
-
-        const notifications = await prisma.notification.findMany({
-            where: { user_id: req.userId },
-            orderBy: { created_at: 'desc' },
-        })
-
-        if (!notifications.length) {
-            resShort(res, 404, false, 'No notifications found')
-            return
-        }
-
-        res.status(200).json({
-            ok: true,
-            notifications,
-        })
-    } catch (error) {
-        catchError(error, res)
+  try {
+    if (!req.userId) {
+      resShort(res, 400, false, 'No user ID provided')
+      return
     }
-}
 
-// mark notification as readed
-export const notificationReaded = async (req: Request, res: Response) => {
-    try {
-        const { id }: { id: string } = req.body
+    const notifications = await prisma.notification.findMany({
+      where: { user_id: req.userId },
+      orderBy: { created_at: 'desc' },
+    })
 
-        if (!id) {
-            resShort(res, 400, false, 'Enter the notification ID')
-            return
-        }
-
-        const notification = await prisma.notification.findUnique({
-            where: { id },
-        })
-
-        if (!notification) {
-            resShort(res, 404, false, 'Notification is not found')
-            return
-        }
-
-        await prisma.notification.update({
-            where: { id },
-            data: { is_read: true },
-        })
-
-        resShort(res, 200, true, 'Notification marked as readed')
-    } catch (error) {
-        catchError(error, res)
+    if (!notifications.length) {
+      resShort(res, 404, false, 'No notifications found')
+      return
     }
-}
 
-// mark all notification as readed
-export const allNotificationReaded = async (
-    req: AuthRequest,
-    res: Response
-) => {
-    try {
-        if (!req.userId) {
-            resShort(res, 400, false, 'No user ID provided')
-            return
-        }
-
-        const notification = await prisma.notification.findMany({
-            where: { user_id: req.userId },
-        })
-
-        if (!notification.length) {
-            resShort(res, 404, false, 'Notifications are not found')
-            return
-        }
-
-        await prisma.notification.updateMany({
-            where: { user_id: req.userId },
-            data: { is_read: true },
-        })
-
-        resShort(res, 200, true, 'All notifications are marked as readed')
-    } catch (error) {
-        catchError(error, res)
-    }
+    res.status(200).json({
+      ok: true,
+      notifications,
+    })
+  } catch (error) {
+    catchError(error, res)
+  }
 }
 
 // delete notification
 export const deleteNotification = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params
+  try {
+    const { id } = req.params
 
-        if (!id) {
-            resShort(res, 400, false, 'Enter the notification ID')
-            return
-        }
-
-        const notification = await prisma.notification.findUnique({
-            where: { id },
-        })
-
-        if (!notification) {
-            resShort(res, 404, false, 'Notification is not found')
-            return
-        }
-
-        await prisma.notification.delete({
-            where: { id },
-        })
-
-        resShort(res, 200, true, 'Notification deleted successfully')
-    } catch (error) {
-        catchError(error, res)
+    if (!id) {
+      resShort(res, 400, false, 'Enter the notification ID')
+      return
     }
+
+    const notification = await prisma.notification.findUnique({
+      where: { id },
+    })
+
+    if (!notification) {
+      resShort(res, 404, false, 'Notification is not found')
+      return
+    }
+
+    await prisma.notification.delete({
+      where: { id },
+    })
+
+    resShort(res, 200, true, 'Notification deleted successfully')
+  } catch (error) {
+    catchError(error, res)
+  }
 }
 
-// delete all notifications
-export const deleteAllNotifications = async (
-    req: AuthRequest,
-    res: Response
-) => {
-    try {
-        if (!req.userId) {
-            resShort(res, 400, false, 'No user ID provided')
-            return
-        }
+// create announcements
+export const createAnnouncements = async (req: AuthRequest, res: Response) => {
+  try {
+    const { title, message } = req.body
+    const adminId = req.userId
 
-        const notification = await prisma.notification.findMany({
-            where: { user_id: req.userId },
-        })
-
-        if (!notification.length) {
-            resShort(res, 404, false, 'No notifications found')
-            return
-        }
-
-        await prisma.notification.deleteMany({
-            where: { user_id: req.userId },
-        })
-
-        resShort(res, 200, true, 'Notifications are deleted successfully')
-    } catch (error) {
-        catchError(error, res)
+    if (!title || !message) {
+      return res.status(400).json({ ok: false, message: 'Missing fields' })
     }
-}
 
-// get the number of unreaded messages
-export const getNumberOfUnReaded = async (req: AuthRequest, res: Response) => {
-    try {
-        if (!req.userId) {
-            resShort(res, 400, false, 'No user ID provided')
-            return
-        }
+    // get users who opted in
+    const users = await prisma.user.findMany({
+      where: { user_settings: { some: { email_notifications: true } } },
+      select: { id: true, email: true },
+    })
 
-        const count = await prisma.notification.count({
-            where: { user_id: req.userId, is_read: false },
-        })
-
-        res.status(200).json({
-            ok: true,
-            count,
-        })
-    } catch (error) {
-        catchError(error, res)
+    if (!users.length) {
+      return res.status(200).json({ ok: true, message: 'No users to notify' })
     }
-}
 
-// send notification to all users
-export const sendNotificationToAll = async (req: Request, res: Response) => {
-    try {
-        const { name, message }: ISendNotification = req.body
+    // store notifications in DB
+    await prisma.notification.createMany({
+      data: users.map((u) => ({
+        name: title,
+        message,
+        user_id: u.id,
+      })),
+    })
 
-        if (!name || !message) {
-            resShort(res, 400, false, 'Enter the name and the message')
-            return
-        }
-
-        const users = await prisma.user.findMany({
-            select: { id: true },
-        })
-
-        const notifications = users.map((user) => ({
-            user_id: user.id,
-            name,
-            message,
-        }))
-
-        await prisma.notification.createMany({
-            data: notifications,
-        })
-
-        resShort(
-            res,
-            200,
-            true,
-            'Notification is sent to all users successfully'
-        )
-    } catch (error) {
-        catchError(error, res)
+    // send email
+    for (const user of users) {
+      await sendEmailHtml(user.email, title, `<p>${message}</p>`)
     }
+
+    return res.status(201).json({ ok: true, message: 'Announcement sent' })
+  } catch (error) {
+    catchError(error, res)
+  }
 }
