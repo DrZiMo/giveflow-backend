@@ -34,7 +34,7 @@ router.get('/featured', getFeaturedCauses)
 router.get(
   '/recycle-bin',
   authenticate,
-  authorize([ROLE.ADMIN]),
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
   getDeletedCauses
 )
 router.get('/trending', authenticate, getTrendingCauses)
@@ -46,27 +46,37 @@ router.post('/cause-pic', authenticate, upload.single('causePic'), causePicture)
 router.post(
   '/delete-temp',
   authenticate,
-  authorize([ROLE.ADMIN]),
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
   deleteCauseTemp
 )
 router.post(
   '/delete-perm',
   authenticate,
-  authorize([ROLE.ADMIN]),
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
   deleteCausePerm
 )
-router.post('/restore', authenticate, authorize([ROLE.ADMIN]), restoreCause)
-router.put('/update', authenticate, authorize([ROLE.ADMIN]), updateCause)
+router.post(
+  '/restore',
+  authenticate,
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
+  restoreCause
+)
+router.put(
+  '/update',
+  authenticate,
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
+  updateCause
+)
 router.post(
   '/toggle-featured',
   authenticate,
-  authorize([ROLE.ADMIN]),
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
   toggleFeatured
 )
 router.post(
   '/toggle-active',
   authenticate,
-  authorize([ROLE.ADMIN]),
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
   toggleActiveCause
 )
 router.get('/donors/:causeId', getNumberOfDonors)

@@ -5,6 +5,7 @@ import { userSelect } from '../../lib/select/user.select'
 import {
   ILoginUser,
   ISearchUser,
+  ISendMessageEmail,
   ISingUpUser,
   IUpdateUser,
 } from '../../types/user.types'
@@ -14,7 +15,7 @@ import { AuthRequest } from '../../types/request.types'
 import { resShort } from '../../lib/response'
 import jwt from 'jsonwebtoken'
 import { generateCode } from '../../lib/generate.code'
-import { sendEmail } from '../../lib/send.email'
+import { sendEmail, sendEmailMessage } from '../../lib/send.email'
 import cloudinary from '../../utils/cloudinary'
 
 const prisma = new PrismaClient()
@@ -25,11 +26,21 @@ export const getAllUsers = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1
     const limit = parseInt(req.query.limit as string) || 10
     const skip = (page - 1) * limit
-    const status = (req.query.status as string) || 'all'
+    const status = (req.query.status as string) || 'all' // active, suspend, all
+    const role = (req.query.role as string) || 'all' // admins, moderator, users
 
     let where: any = {}
+
+    // filter by status
     if (status === 'active') where.is_deleted = false
     if (status === 'suspend') where.is_deleted = true
+
+    // filter by role
+    if (role !== 'all') {
+      if (role === ROLE.ADMIN) where.role = ROLE.ADMIN
+      if (role === ROLE.MODERATOR) where.role = ROLE.MODERATOR
+      if (role === ROLE.USER) where.role = ROLE.USER
+    }
 
     const [users, totalUsers, activeCount, suspendCount] = await Promise.all([
       prisma.user.findMany({
@@ -39,11 +50,10 @@ export const getAllUsers = async (req: Request, res: Response) => {
         select: userSelect,
       }),
       prisma.user.count({ where }),
-      prisma.user.count({ where: { is_deleted: false } }),
-      prisma.user.count({ where: { is_deleted: true } }),
+      prisma.user.count({ where: { ...where, is_deleted: false } }),
+      prisma.user.count({ where: { ...where, is_deleted: true } }),
     ])
 
-    // don’t return 404, return empty array + counts
     const usersWithStats = await Promise.all(
       users.map(async (user) => {
         const donations = await prisma.donation.findMany({
@@ -64,7 +74,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
 
     res.status(200).json({
       ok: true,
-      users: usersWithStats, // [] if none
+      users: usersWithStats,
       number: totalUsers || 0,
       activeCount: activeCount || 0,
       suspendCount: suspendCount || 0,
@@ -1422,6 +1432,24 @@ export const getTopDonors = async (req: Request, res: Response) => {
       ok: true,
       donors: donorsWithUser,
     })
+  } catch (error) {
+    catchError(error, res)
+  }
+}
+
+// sending message through email
+export const sendMessageEmail = async (req: Request, res: Response) => {
+  try {
+    const { full_name, email, subject, message }: ISendMessageEmail = req.body
+
+    if (!full_name || !email || !subject || !message) {
+      resShort(res, 400, false, 'Fill all the inputs')
+      return
+    }
+
+    await sendEmailMessage(email, subject, message)
+
+    resShort(res, 200, true, 'Email sended successfully')
   } catch (error) {
     catchError(error, res)
   }

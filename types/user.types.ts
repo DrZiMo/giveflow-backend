@@ -27,3 +27,10 @@ export interface IUpdateUser {
   first_name: string
   last_name: string
 }
+
+export interface ISendMessageEmail {
+  full_name: string
+  email: string
+  subject: string
+  message: string
+}

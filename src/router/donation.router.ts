@@ -19,7 +19,12 @@ import { ROLE } from '@prisma/client'
 
 const router = express.Router()
 
-router.get('/all', authenticate, authorize([ROLE.ADMIN]), getAllDonations)
+router.get(
+  '/all',
+  authenticate,
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
+  getAllDonations
+)
 router.post('/create-session', authenticate, createDonation)
 router.post(
   '/webhook',
@@ -30,19 +35,19 @@ router.get('/top-donors/:causeId', getDonorsByCause)
 router.get(
   '/summary-admin',
   authenticate,
-  authorize([ROLE.ADMIN]),
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
   getDonationSummary
 )
 router.get(
   '/monthly-admin',
   authenticate,
-  authorize([ROLE.ADMIN]),
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
   getMonthlyDonations
 )
 router.get(
   '/supported-causes-admin',
   authenticate,
-  authorize([ROLE.ADMIN]),
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
   getTopSupportedCauses
 )
 router.get('/summary', authenticate, getUserDonationSummary)

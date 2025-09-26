@@ -20,6 +20,7 @@ import {
   restoreDeletedUser,
   sendCodeEmail,
   sendCodePhoneNumber,
+  sendMessageEmail,
   signUp,
   toggleAnonymousUser,
   toggleHistoryVisibility,
@@ -41,8 +42,12 @@ import upload from '../../middleware/multer'
 
 const router = Router()
 
-router.get('/all', authenticate, authorize([ROLE.ADMIN]), getAllUsers)
-// router.get('/search', authenticate, authorize([ROLE.ADMIN]), getUsers)
+router.get(
+  '/all',
+  authenticate,
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
+  getAllUsers
+)
 router.post('/single-user', authenticate, getSingleUser)
 router.get(
   '/recycle-pin',
@@ -56,7 +61,12 @@ router.get(
   authorize([ROLE.ADMIN]),
   restoreDeletedUser
 )
-router.get('/top-donors', authenticate, authorize([ROLE.ADMIN]), getTopDonors)
+router.get(
+  '/top-donors',
+  authenticate,
+  authorize([ROLE.ADMIN, ROLE.MODERATOR]),
+  getTopDonors
+)
 router.put(
   '/update-user-admin',
   authenticate,
@@ -106,5 +116,6 @@ router.put('/update-privacy-settings', authenticate, updatePrivacySettings)
 router.get('/donation-history', authenticate, getDonationHistory)
 router.post('/two-factor', authenticate, toggleTwoFactorAuthentication)
 router.post('/verify-2fa', authenticate, verifyTwoFactorAuthentication)
+router.post('/send-message-email', sendMessageEmail)
 
 export default router

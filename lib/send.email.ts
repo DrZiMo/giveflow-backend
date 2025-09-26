@@ -13,6 +13,23 @@ export const sendEmail = async (to: string, subject: string, text: string) => {
   }
 }
 
+export const sendEmailMessage = async (
+  from: string,
+  subject: string,
+  text: string
+) => {
+  try {
+    await transporter.sendMail({
+      from,
+      to: 'zuhaybhamar@gmail.com',
+      subject,
+      text,
+    })
+  } catch (error) {
+    console.log('Error sending email: ' + error)
+  }
+}
+
 export const sendEmailHtml = async (
   to: string,
   subject: string,
