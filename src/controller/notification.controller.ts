@@ -3,22 +3,18 @@ import { PrismaClient } from '@prisma/client'
 import { AuthRequest } from '../../types/request.types'
 import { catchError } from '../../lib/catch.error'
 import { resShort } from '../../lib/response'
-import { ISendNotification } from '../../types/notification.types'
 import { sendEmailHtml } from '../../lib/send.email'
 
 const prisma = new PrismaClient()
 
 // get all notifications of one user
-export const getAllNotification = async (req: AuthRequest, res: Response) => {
+export const getAllNotification = async (req: Request, res: Response) => {
   try {
-    if (!req.userId) {
-      resShort(res, 400, false, 'No user ID provided')
-      return
-    }
-
     const notifications = await prisma.notification.findMany({
-      where: { user_id: req.userId },
       orderBy: { created_at: 'desc' },
+      include: {
+        user: true,
+      },
     })
 
     if (!notifications.length) {
@@ -68,7 +64,6 @@ export const deleteNotification = async (req: Request, res: Response) => {
 export const createAnnouncements = async (req: AuthRequest, res: Response) => {
   try {
     const { title, message } = req.body
-    const adminId = req.userId
 
     if (!title || !message) {
       return res.status(400).json({ ok: false, message: 'Missing fields' })
@@ -85,12 +80,13 @@ export const createAnnouncements = async (req: AuthRequest, res: Response) => {
     }
 
     // store notifications in DB
-    await prisma.notification.createMany({
-      data: users.map((u) => ({
+    await prisma.notification.create({
+      data: {
         name: title,
         message,
-        user_id: u.id,
-      })),
+        user_id: req.userId!,
+        number_of_users: users.length,
+      },
     })
 
     // send email

@@ -104,12 +104,13 @@ model donation {
 }
 
 model notification {
-  id         String   @id @default(uuid())
-  user_id    Int
-  name       String
-  message    String
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+  id              String   @id @default(uuid())
+  user_id         Int
+  name            String
+  message         String
+  number_of_users Int
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
 
   user user @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
