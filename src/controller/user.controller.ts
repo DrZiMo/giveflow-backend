@@ -1454,3 +1454,41 @@ export const sendMessageEmail = async (req: Request, res: Response) => {
     catchError(error, res)
   }
 }
+
+// send forget password code
+export const sendForgetPasswordCodeEmail = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { email } = req.body
+
+    if (!email) return resShort(res, 400, false, 'Email is required')
+
+    const user = await prisma.user.findUnique({ where: { email } })
+
+    if (!user) return resShort(res, 404, false, 'User not found')
+    if (!user.email) return resShort(res, 400, false, 'User has no email')
+
+    const code = generateCode()
+    const expiry = new Date(Date.now() + 2 * 60 * 1000)
+
+    await prisma.verification_code.create({
+      data: {
+        user_id: user.id,
+        code,
+        expiry,
+      },
+    })
+
+    await sendEmail(
+      user.email,
+      'GiveFlow Verification Code',
+      `Your code: ${code}`
+    )
+
+    resShort(res, 200, true, 'Verification code sent successfully')
+  } catch (error) {
+    catchError(error, res)
+  }
+}

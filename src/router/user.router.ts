@@ -20,6 +20,7 @@ import {
   restoreDeletedUser,
   sendCodeEmail,
   sendCodePhoneNumber,
+  sendForgetPasswordCodeEmail,
   sendMessageEmail,
   signUp,
   toggleAnonymousUser,
@@ -117,5 +118,6 @@ router.get('/donation-history', authenticate, getDonationHistory)
 router.post('/two-factor', authenticate, toggleTwoFactorAuthentication)
 router.post('/verify-2fa', authenticate, verifyTwoFactorAuthentication)
 router.post('/send-message-email', sendMessageEmail)
+router.post('/send-forget-password-code-email', sendForgetPasswordCodeEmail)
 
 export default router
