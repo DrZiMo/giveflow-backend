@@ -162,7 +162,7 @@ export const handleStripeWebhook = async (req: Request, res: Response) => {
 // get donors per cause with total donation amount
 export const getDonorsByCause = async (req: Request, res: Response) => {
   try {
-    const { causeId } = req.params
+    const causeId = req.params.causeId as string
 
     if (!causeId) {
       resShort(res, 400, false, 'Cause ID is required')

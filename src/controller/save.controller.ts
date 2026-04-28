@@ -3,7 +3,6 @@ import { PrismaClient } from '@prisma/client'
 import { AuthRequest } from '../types/request.types'
 import { catchError } from '../lib/catch.error'
 import { resShort } from '../lib/response'
-import { sendNotification } from '../lib/send.notification'
 
 const prisma = new PrismaClient()
 

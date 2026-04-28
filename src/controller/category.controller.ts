@@ -131,7 +131,7 @@ export const updateCategory = async (req: Request, res: Response) => {
 // delete category
 export const deleteCategory = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params
+        const id = req.params.id as string
 
         if (!id) {
             resShort(res, 400, false, 'Enter the id')

@@ -34,7 +34,7 @@ export const getAllNotification = async (req: Request, res: Response) => {
 // delete notification
 export const deleteNotification = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params
+    const id = req.params.id as string
 
     if (!id) {
       resShort(res, 400, false, 'Enter the notification ID')

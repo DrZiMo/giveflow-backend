@@ -9,7 +9,6 @@ import {
 } from '../types/cause.types'
 import cloudinary from '../utils/cloudinary'
 import { causeInclude } from '../lib/include/cause.include'
-import { sendNotification } from '../lib/send.notification'
 import { AuthRequest } from '../types/request.types'
 
 const prisma = new PrismaClient()
@@ -113,7 +112,7 @@ export const getAllCauses = async (req: Request, res: Response) => {
 // get single cause
 export const getSingleCause = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params
+    const id = req.params.id as string
 
     if (!id) {
       resShort(res, 400, false, 'Enter the ID of the cause')
@@ -712,7 +711,7 @@ export const toggleFeatured = async (req: Request, res: Response) => {
 // get the number of donors for each cause
 export const getNumberOfDonors = async (req: Request, res: Response) => {
   try {
-    const { causeId } = req.params
+    const causeId = req.params.causeId as string
     const donors = await prisma.donation.groupBy({
       by: ['user_id'],
       where: { cause_id: causeId },
@@ -739,7 +738,7 @@ export const toggleLikeCause = async (req: AuthRequest, res: Response) => {
       return
     }
 
-    const { causeId } = req.params
+    const causeId = req.params.causeId as string
 
     if (!causeId) {
       resShort(res, 400, false, 'No cause ID provided')
