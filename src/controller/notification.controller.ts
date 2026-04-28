@@ -1,9 +1,9 @@
 import { Request, RequestHandler, Response } from 'express'
 import { PrismaClient } from '@prisma/client'
-import { AuthRequest } from '../../types/request.types'
-import { catchError } from '../../lib/catch.error'
-import { resShort } from '../../lib/response'
-import { sendEmailHtml } from '../../lib/send.email'
+import { AuthRequest } from '../types/request.types'
+import { catchError } from '../lib/catch.error'
+import { resShort } from '../lib/response'
+import { sendEmailHtml } from '../lib/send.email'
 
 const prisma = new PrismaClient()
 

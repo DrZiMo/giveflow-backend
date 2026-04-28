@@ -1,16 +1,16 @@
 import { CAUSE_STATUS, PrismaClient, URGENCY_LEVEL } from '@prisma/client'
-import { catchError } from '../../lib/catch.error'
+import { catchError } from '../lib/catch.error'
 import { Request, Response } from 'express'
-import { resShort } from '../../lib/response'
+import { resShort } from '../lib/response'
 import {
   IAddNewCause,
   IGetSingleCause,
   IUpdateCause,
-} from '../../types/cause.types'
-import cloudinary from '../../utils/cloudinary'
-import { causeInclude } from '../../lib/include/cause.include'
-import { sendNotification } from '../../lib/send.notification'
-import { AuthRequest } from '../../types/request.types'
+} from '../types/cause.types'
+import cloudinary from '../utils/cloudinary'
+import { causeInclude } from '../lib/include/cause.include'
+import { sendNotification } from '../lib/send.notification'
+import { AuthRequest } from '../types/request.types'
 
 const prisma = new PrismaClient()
 

@@ -12,9 +12,9 @@ import cors from 'cors'
 import settingsRouter from './router/settings.router'
 import likesRouter from './router/like.router'
 import activityRouter from './router/activity.router'
-import '../jobs/donationsReminder'
-import '../jobs/newsLetterReminders'
-import '../jobs/trendingCauses'
+import './jobs/donationsReminder'
+import './jobs/newsLetterReminders'
+import './jobs/trendingCauses'
 
 const app = express()
 dotenv.config()

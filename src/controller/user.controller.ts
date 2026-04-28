@@ -1,22 +1,22 @@
 import { Request, Response } from 'express'
 import { PrismaClient, ROLE } from '@prisma/client'
-import { catchError } from '../../lib/catch.error'
-import { userSelect } from '../../lib/select/user.select'
+import { catchError } from '../lib/catch.error'
+import { userSelect } from '../lib/select/user.select'
 import {
   ILoginUser,
   ISearchUser,
   ISendMessageEmail,
   ISingUpUser,
   IUpdateUser,
-} from '../../types/user.types'
+} from '../types/user.types'
 import argon2 from 'argon2'
-import { generateToken } from '../../lib/jwt'
-import { AuthRequest } from '../../types/request.types'
-import { resShort } from '../../lib/response'
+import { generateToken } from '../lib/jwt'
+import { AuthRequest } from '../types/request.types'
+import { resShort } from '../lib/response'
 import jwt from 'jsonwebtoken'
-import { generateCode } from '../../lib/generate.code'
-import { sendEmail, sendEmailMessage } from '../../lib/send.email'
-import cloudinary from '../../utils/cloudinary'
+import { generateCode } from '../lib/generate.code'
+import { sendEmail, sendEmailMessage } from '../lib/send.email'
+import cloudinary from '../utils/cloudinary'
 
 const prisma = new PrismaClient()
 

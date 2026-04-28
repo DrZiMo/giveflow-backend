@@ -1,7 +1,7 @@
 import { Response } from 'express'
-import { AuthRequest } from '../../types/request.types'
-import { catchError } from '../../lib/catch.error'
-import { resShort } from '../../lib/response'
+import { AuthRequest } from '../types/request.types'
+import { catchError } from '../lib/catch.error'
+import { resShort } from '../lib/response'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()

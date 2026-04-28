@@ -13,8 +13,8 @@ import {
   getMonthlyDonations,
   getTopSupportedCauses,
 } from '../controller/donation.controller'
-import { authenticate } from '../../middleware/authenticate'
-import { authorize } from '../../middleware/authorize'
+import { authenticate } from '../middleware/authenticate'
+import { authorize } from '../middleware/authorize'
 import { ROLE } from '@prisma/client'
 
 const router = express.Router()

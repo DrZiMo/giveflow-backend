@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { createSetting, updateSetting } from '../controller/settings.controller'
-import { authenticate } from '../../middleware/authenticate'
+import { authenticate } from '../middleware/authenticate'
 
 const router = Router()
 

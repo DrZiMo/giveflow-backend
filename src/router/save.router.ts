@@ -1,12 +1,12 @@
 import { Router } from 'express'
-import { authenticate } from '../../middleware/authenticate'
+import { authenticate } from '../middleware/authenticate'
 import {
     clearAllSaves,
     getSaveLater,
     toggleSaveCause,
     userSavesAdmin,
 } from '../controller/save.controller'
-import { authorize } from '../../middleware/authorize'
+import { authorize } from '../middleware/authorize'
 import { ROLE } from '@prisma/client'
 
 const router = Router()

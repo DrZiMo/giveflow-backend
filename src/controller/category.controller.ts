@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import { Request, Response } from 'express'
-import { catchError } from '../../lib/catch.error'
-import { resShort } from '../../lib/response'
-import { ISearchCategory } from '../../types/category.types'
-import { categoryInclude } from '../../lib/include/category.include'
+import { catchError } from '../lib/catch.error'
+import { resShort } from '../lib/response'
+import { ISearchCategory } from '../types/category.types'
+import { categoryInclude } from '../lib/include/category.include'
 
 const prisma = new PrismaClient()
 

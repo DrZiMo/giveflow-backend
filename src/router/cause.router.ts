@@ -20,10 +20,10 @@ import {
   toggleLikeCause,
   updateCause,
 } from '../controller/cause.controller'
-import { authenticate } from '../../middleware/authenticate'
-import { authorize } from '../../middleware/authorize'
+import { authenticate } from '../middleware/authenticate'
+import { authorize } from '../middleware/authorize'
 import { ROLE } from '@prisma/client'
-import upload from '../../middleware/multer'
+import upload from '../middleware/multer'
 
 const router = Router()
 

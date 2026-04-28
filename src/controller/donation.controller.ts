@@ -1,12 +1,12 @@
 import { PrismaClient } from '@prisma/client'
 import Stripe from 'stripe'
-import { AuthRequest } from '../../types/request.types'
-import { catchError } from '../../lib/catch.error'
+import { AuthRequest } from '../types/request.types'
+import { catchError } from '../lib/catch.error'
 import { Request, Response } from 'express'
-import { ICreateDonation } from '../../types/donation.types'
-import { resShort } from '../../lib/response'
-import { userSelect } from '../../lib/select/user.select'
-import { sendEmailHtml } from '../../lib/send.email'
+import { ICreateDonation } from '../types/donation.types'
+import { resShort } from '../lib/response'
+import { userSelect } from '../lib/select/user.select'
+import { sendEmailHtml } from '../lib/send.email'
 
 const prisma = new PrismaClient()
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY! as string)
